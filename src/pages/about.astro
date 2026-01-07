@@ -1,0 +1,357 @@
+---
+import Layout from "../layouts/layout.astro";
+const title = "About - Harry Zhao";
+---
+
+<Layout title={title}>
+  <!-- Page Header -->
+  <section class="page-header">
+    <div class="container">
+      <h1>About Me</h1>
+    </div>
+  </section>
+
+  <!-- About Content -->
+  <section class="about-section">
+    <div class="about-container">
+      
+      <!-- Profile Image (optional - you can add your photo) -->
+      <div class="profile-image-wrapper">
+        <div class="profile-placeholder">
+          <!-- Replace with your image: <img src="/images/about/profile.jpg" alt="Harry Zhao" class="profile-image" /> -->
+          <span class="profile-initials">HZ</span>
+        </div>
+      </div>
+
+      <!-- Bio -->
+      <div class="bio">
+        <h2 class="bio-title">Harry Zhao</h2>
+        <p class="bio-subtitle">Digital Media | Physical Computing | Creative Technologist</p>
+        
+        <div class="bio-text">
+          <p>
+            Hello! I'm Harry Zhao, a creative technologist specializing in digital media 
+            and physical computing. I love blending art and technology to create immersive 
+            experiences that push the boundaries of what's possible.
+          </p>
+          c
+          <p>
+            My work spans across various mediums including animation, interactive installations, 
+            and digital art. I'm passionate about exploring the intersection of creativity and 
+            technology, always looking for new ways to tell stories and engage audiences.
+          </p>
+
+          <p>
+            Currently based in Toronto, I'm always open to collaborations and new opportunities. 
+            Feel free to reach out if you'd like to work together!
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Skills Section -->
+  <section class="skills-section">
+    <div class="container">
+      <h2 class="section-title">Skills & Tools</h2>
+      
+      <div class="skills-grid">
+        <div class="skill-category">
+          <h3>Digital Media</h3>
+          <ul>
+            <li>Unreal Engine</li>
+            <li>Unity</li>
+            <li>After Effects</li>
+            <li>Premiere Pro</li>
+          </ul>
+        </div>
+
+        <div class="skill-category">
+          <h3>Creative Coding</h3>
+          <ul>
+            <li>Processing</li>
+            <li>p5.js</li>
+            <li>TouchDesigner</li>
+            <li>Arduino</li>
+          </ul>
+        </div>
+
+        <div class="skill-category">
+          <h3>3D & Animation</h3>
+          <ul>
+            <li>Blender</li>
+            <li>Cinema 4D</li>
+            <li>Maya</li>
+            <li>ZBrush</li>
+          </ul>
+        </div>
+
+        <div class="skill-category">
+          <h3>Web Development</h3>
+          <ul>
+            <li>HTML / CSS</li>
+            <li>JavaScript</li>
+            <li>Astro</li>
+            <li>React</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Education / Experience (optional section) -->
+  <section class="experience-section">
+    <div class="container">
+      <h2 class="section-title">Education</h2>
+      
+      <div class="experience-list">
+        <div class="experience-item">
+          <div class="experience-date">2020 - Present</div>
+          <div class="experience-details">
+            <h3>OCAD University</h3>
+            <p>Digital Futures Program</p>
+          </div>
+        </div>
+        
+        <!-- Add more education/experience items as needed -->
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Let's Work Together</h2>
+      <p>Interested in collaborating? I'd love to hear from you.</p>
+      <a href="/contact" class="cta-button">Get in Touch</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  /* Page Header */
+  .page-header {
+    padding: 4rem 2rem 2rem;
+    text-align: center;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin: 0;
+  }
+
+  /* About Section */
+  .about-section {
+    padding: 3rem 2rem;
+  }
+
+  .about-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  /* Profile Image */
+  .profile-image-wrapper {
+    flex-shrink: 0;
+  }
+
+  .profile-placeholder {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid rgba(255,255,255,0.2);
+  }
+
+  .profile-initials {
+    font-size: 3rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.6);
+  }
+
+  .profile-image {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(255,255,255,0.2);
+  }
+
+  /* Bio */
+  .bio {
+    text-align: center;
+  }
+
+  .bio-title {
+    font-size: 1.75rem;
+    font-weight: 400;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .bio-subtitle {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.6);
+    margin: 0 0 1.5rem 0;
+  }
+
+  .bio-text p {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 1rem;
+    text-align: left;
+  }
+
+  /* Skills Section */
+  .skills-section {
+    padding: 3rem 2rem;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .section-title {
+    font-size: 1.75rem;
+    font-weight: 400;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 900px) {
+    .skills-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 500px) {
+    .skills-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .skill-category {
+    background: rgba(255,255,255,0.03);
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+
+  .skill-category h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0 0 1rem 0;
+    color: rgba(255,255,255,0.9);
+  }
+
+  .skill-category ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .skill-category li {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.7);
+    padding: 0.4rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .skill-category li:last-child {
+    border-bottom: none;
+  }
+
+  /* Experience Section */
+  .experience-section {
+    padding: 3rem 2rem;
+  }
+
+  .experience-list {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .experience-item {
+    display: flex;
+    gap: 2rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .experience-date {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.5);
+    min-width: 120px;
+  }
+
+  .experience-details h3 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0 0 0.25rem 0;
+  }
+
+  .experience-details p {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.7);
+    margin: 0;
+  }
+
+  /* CTA Section */
+  .cta-section {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .cta-section h2 {
+    font-size: 1.75rem;
+    font-weight: 400;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .cta-section p {
+    color: rgba(255,255,255,0.7);
+    margin: 0 0 1.5rem 0;
+  }
+
+  .cta-button {
+    display: inline-block;
+    padding: 0.75rem 2rem;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: background 0.2s ease;
+  }
+
+  .cta-button:hover {
+    background: rgba(255,255,255,0.2);
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .experience-item {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .experience-date {
+      min-width: auto;
+    }
+  }
+</style>

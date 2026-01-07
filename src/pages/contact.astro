@@ -1,0 +1,296 @@
+---
+import Layout from "../layouts/layout.astro";
+const title = "Contact - Harry Zhao";
+---
+
+<Layout title={title}>
+  <!-- Page Header -->
+  <section class="page-header">
+    <div class="container">
+      <h1>Get in Touch</h1>
+      <p class="page-subtitle">I'd love to hear from you</p>
+    </div>
+  </section>
+
+  <!-- Contact Content -->
+  <section class="contact-section">
+    <div class="contact-container">
+      
+      <!-- Contact Info -->
+      <div class="contact-info">
+        <div class="info-item">
+          <h3>Email</h3>
+          <a href="mailto:hzhao@ocadu.ca">hzhao@ocadu.ca</a>
+        </div>
+
+        <div class="info-item">
+          <h3>Location</h3>
+          <p>Toronto, Canada</p>
+        </div>
+
+        <div class="info-item">
+          <h3>Social</h3>
+          <div class="social-links">
+            <!-- Update these links with your actual social profiles -->
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://vimeo.com" target="_blank" rel="noopener noreferrer">Vimeo</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Form -->
+      <div class="contact-form-wrapper">
+        <h2>Send a Message</h2>
+        <form class="contact-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required placeholder="Your name" />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required placeholder="your@email.com" />
+          </div>
+
+          <div class="form-group">
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" name="subject" placeholder="What's this about?" />
+          </div>
+
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="5" required placeholder="Your message..."></textarea>
+          </div>
+
+          <button type="submit" class="submit-button">Send Message</button>
+        </form>
+        <p class="form-note">
+          Note: To make the form work, sign up at <a href="https://formspree.io" target="_blank">Formspree</a> 
+          and replace YOUR_FORM_ID with your form endpoint.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Map or Additional Section (optional) -->
+  <section class="availability-section">
+    <div class="container">
+      <h2>Availability</h2>
+      <p>
+        I'm currently open to freelance projects, collaborations, and full-time opportunities. 
+        Whether you have a project in mind or just want to say hello, don't hesitate to reach out!
+      </p>
+      <div class="response-time">
+        <span class="status-dot"></span>
+        <span>Usually responds within 24-48 hours</span>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  /* Page Header */
+  .page-header {
+    padding: 4rem 2rem 2rem;
+    text-align: center;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .page-subtitle {
+    color: rgba(255,255,255,0.6);
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  /* Contact Section */
+  .contact-section {
+    padding: 3rem 2rem;
+  }
+
+  .contact-container {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 4rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 768px) {
+    .contact-container {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+  }
+
+  /* Contact Info */
+  .contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .info-item h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.5);
+    margin: 0 0 0.5rem 0;
+  }
+
+  .info-item a,
+  .info-item p {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.9);
+    text-decoration: none;
+    margin: 0;
+    transition: color 0.2s ease;
+  }
+
+  .info-item a:hover {
+    color: #60a5fa;
+  }
+
+  .social-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .social-links a {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.8);
+  }
+
+  /* Contact Form */
+  .contact-form-wrapper h2 {
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin: 0 0 1.5rem 0;
+  }
+
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .form-group input,
+  .form-group textarea {
+    padding: 0.875rem 1rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .form-group input::placeholder,
+  .form-group textarea::placeholder {
+    color: rgba(255,255,255,0.3);
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.08);
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .submit-button {
+    padding: 0.875rem 2rem;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .submit-button:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.3);
+  }
+
+  .form-note {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.4);
+    margin-top: 1rem;
+  }
+
+  .form-note a {
+    color: rgba(255,255,255,0.6);
+  }
+
+  /* Availability Section */
+  .availability-section {
+    padding: 3rem 2rem;
+    text-align: center;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .availability-section h2 {
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin: 0 0 1rem 0;
+  }
+
+  .availability-section p {
+    max-width: 600px;
+    margin: 0 auto 1.5rem;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.6;
+  }
+
+  .response-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.6);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+</style>

@@ -1,0 +1,46 @@
+---
+export interface Props {
+  title?: string
+}
+export let title: string = "My Page"
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <style>
+      :root { --bg1: #0f172a; --bg2: #1e293b; --fg: #e6eef8; }
+      html, body { height: 100%; margin: 0; }
+      body {
+        min-height: 100vh;
+        display: block;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        background: linear-gradient(135deg, var(--bg1), var(--bg2));
+        color: var(--fg);
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      }
+      .container {
+        text-align: center;
+        padding: 2rem;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.03);
+        box-shadow: 0 6px 24px rgba(2,6,23,0.6);
+        backdrop-filter: blur(6px);
+        max-width: 880px;
+        width: 90%;
+      }
+      h1 { margin: 0 0 0.5rem 0; font-size: clamp(1.5rem, 4vw, 2.5rem); }
+      p { margin: 0; opacity: 0.9; }
+    </style>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
