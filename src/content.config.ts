@@ -5,9 +5,9 @@ const worksCollection = defineCollection({
   schema: ({ image }) => z.object({
     title: z.string(),
     description: z.string(),
-    // 使用 image() 可以让 Astro 自动优化本地图片
-    coverImage: image(), 
-    galleryImages: z.array(image()).default([]).optional(),
+    // 使用 string() 来支持公共文件夹的路径
+    coverImage: z.string(), 
+    galleryImages: z.array(z.string()).default([]).optional(),
     previewWebm: z.string().optional(),
     videoUrl: z.string().url().optional(),
     tags: z.array(z.string()),

@@ -5,7 +5,6 @@ const title = "Harry Zhao";
 const { imagePath } = Astro.props;
 
 import { getCollection } from 'astro:content';
-import { Image } from 'astro:assets';
 
 // 过滤出 isFeatured 为 true 的作品
 const featuredWorks = await getCollection('works', ({ data }) => {
@@ -14,25 +13,25 @@ const featuredWorks = await getCollection('works', ({ data }) => {
 const top6FeaturedWorks = featuredWorks.sort(() => Math.random() - 0.5).slice(0, 8);
 
 // 可以在这里设置默认值，防止没传参数时出错
-const bgImage = imagePath || '/images/work/moomoocow_1.png';
+const bgImage = imagePath || '/images/work/moomoocow/moomoocow_1.png';
 ---
 
 <Layout title={title}>
-  <section class="full-section img-bg" style={{ "--bg-url": `url('/images/work/moomoocow_1.png')` }}>
+  <section class="full-section img-bg" style={{ "--bg-url": `url('/images/work/moomoocow/moomoocow_1.png')` }}>
     <div class="content-wrapper container">
       <div class="hero">
         <h1>{title}</h1>
-        <p class="hero-subtitle">Digital Media | Physical Computing | Creative Technologist</p>
+        <p class="hero-subtitle">Digital Media | Interactive Design</p>
       </div>
     </div>
   </section>
 
-  <section class="full-section section black-bg" style={{ "--bg-color": `url('/images/work/moomoocow_2.png')` }}>
+  <section class="full-section section black-bg" style={{ "--bg-color": `url('/images/work/moomoocow/moomoocow_2.png')` }}>
 
     <div class="card-wrapper">   
       {top6FeaturedWorks.map(work => (
-      <a href={`/works/${work.id || work.slug}`}class="card">
-        <Image src={work.data.coverImage} alt={work.data.title} class = "card_image"/>
+      <a href={`/works/${work.id}`} class="card">
+        <img src={work.data.coverImage} alt={work.data.title} class="card_image"/>
         <video width="600" muted loop autoplay preload="none">
           <source src={work.data.previewWebm} type="video/webm" />
         </video>
@@ -44,17 +43,10 @@ const bgImage = imagePath || '/images/work/moomoocow_1.png';
   </section>
 
 
-  <section class="full-section section projects">
+  <section class="full-section section short-section">
     <div class="container">
       <h2 class="section-heading">About</h2>
-      <p>Hello! I'm Harry Zhao, a creative technologist specializing in digital media and physical computing. I love blending art and technology to create immersive experiences. Welcome to my portfolio!</p>
-    </div>
-  </section>
-
-  <section class="full-section section contact">
-    <div class="container">
-      <h2 class="section-heading">Contact</h2>
-      <p>Feel free to reach out via email: hzhao@ocadu.ca</p>
+      <p class="about-text">Hello! I'm Harry Zhao, a creative technologist specializing in digital media and physical computing. I love blending art and technology to create immersive experiences. Welcome to my portfolio!</p>
     </div>
   </section>
 </Layout>
@@ -159,19 +151,23 @@ const bgImage = imagePath || '/images/work/moomoocow_1.png';
     justify-content: flex-start;
     flex-direction: column;
   }
+  .short-section {
+    min-height: 50vh;
+  }
   .content-wrapper {
     position: relative;
     align-items: center;
     justify-content: center;
-    display:grid 1fr 1fr;
+    display: flex;
+    flex: 1;
     width: 100%;
   }
 
   .section {
 	color: var(--fg);
   }
-  .about { 
-    display: flex;
+  .about-text { 
+    padding: 0 10rem 0 10rem;
     
   }
   .projects { background: rgba(255,255,255,0.01); }
@@ -179,6 +175,8 @@ const bgImage = imagePath || '/images/work/moomoocow_1.png';
 
   .hero {
     text-align: center;
+    font-family: "DM Serif Display", serif;
+    font-size: 2rem;
   }
 
   .hero h1 {
@@ -188,7 +186,7 @@ const bgImage = imagePath || '/images/work/moomoocow_1.png';
   }
 
   .hero-subtitle {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     letter-spacing: 0.05em;
     margin-left: auto; 
     margin-right: auto;
@@ -197,12 +195,13 @@ const bgImage = imagePath || '/images/work/moomoocow_1.png';
 
   .section-heading { 
     margin:0 0.75rem 0; 
-    font-size: 2rem; 
+    font-size: 3rem; 
+    font-family: "DM Serif Display", serif; 
     display:flex;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: flex-start;
-    margin-top: 1vh;
-    margin-bottom: 1vh;
+    margin-top: 5rem;
+    margin-bottom: 5rem;
   }
   .muted {
     color: rgba(255,255,255,0.4);

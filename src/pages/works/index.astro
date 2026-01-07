@@ -1,7 +1,6 @@
 ---
 import Layout from "../../layouts/layout.astro";
 import { getCollection } from 'astro:content';
-import { Image } from 'astro:assets';
 
 const title = "All Works - Harry Zhao";
 
@@ -25,9 +24,9 @@ const sortedWorks = allWorks.sort((a, b) =>
   <section class="works-section">
     <div class="works-grid">
       {sortedWorks.map(work => (
-        <a href={`/works/${work.id || work.slug}`} class="work-card">
+        <a href={`/works/${work.id}`} class="work-card">
           <div class="work-image-wrapper">
-            <Image src={work.data.coverImage} alt={work.data.title} class="work-image" />
+            <img src={work.data.coverImage} alt={work.data.title} class="work-image" />
             {work.data.previewWebm && (
               <video width="600" muted loop autoplay preload="none">
                 <source src={work.data.previewWebm} type="video/webm" />

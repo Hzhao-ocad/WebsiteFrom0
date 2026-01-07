@@ -1,8 +1,10 @@
 ---
+import Header from '../components/Header.astro';
 export interface Props {
   title?: string
 }
 export let title: string = "My Page"
+
 ---
 
 <!doctype html>
@@ -10,12 +12,22 @@ export let title: string = "My Page"
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">.
+
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <style>
-      :root { --bg1: #0f172a; --bg2: #1e293b; --fg: #e6eef8; }
+      :root { --bg1: #0f172a; --bg2: #1e293b; --fg: #e6eef8; --heading-font: "DM Serif Display", serif;}
       html, body { height: 100%; margin: 0; }
+      /* Apply the new font only to headings */
+      h1, h2, h3, .section-heading {
+        font-family: var(--heading-font);
+        font-weight: 400; /* DM Serif Display usually only has weight 400 */
+      }
       body {
         min-height: 100vh;
         display: block;
@@ -41,6 +53,9 @@ export let title: string = "My Page"
     </style>
   </head>
   <body>
-    <slot />
+    <Header />
+    
+    <main>
+      <slot /> </main>
   </body>
 </html>

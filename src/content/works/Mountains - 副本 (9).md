@@ -1,7 +1,7 @@
 ---
 title: "Tig3r"
 description: "Digital work down in unreal"
-coverImage: "/public/images/work/Mountains/01.png"
+coverImage: "/images/work/Mountains/01.png"
 videoUrl: "https://www.youtube.com/watch?v=xxx"
 tags: ["Ceramics", "Sculpture"]
 publishDate: 2024-03-05

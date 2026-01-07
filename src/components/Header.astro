@@ -1,0 +1,59 @@
+---
+// src/components/Header.astro
+---
+<header class="main-header">
+  <div class="header-container">
+    <a href="/" class="logo">HARRY ZHAO</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/works">Works</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .main-header {
+    position:absolute;
+    top:0;
+    z-index: 10;
+    width: 100%;
+    background: rgba(15, 23, 42, 0.9); /* Matches your bg1 color */
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    /* No position: fixed here makes it a "normal box" */
+  }
+
+  .header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.75rem 1.125rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo {
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-decoration: none;
+    color: white;
+  }
+
+  nav {
+    display: flex;
+    gap: 2rem;
+  }
+
+  nav a {
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    transition: color 0.2s;
+  }
+
+  nav a:hover {
+    color: white;
+  }
+</style>
