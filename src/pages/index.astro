@@ -32,7 +32,7 @@ const bgImage = imagePath || '/images/work/moomoocow/moomoocow_1.png';
       {top6FeaturedWorks.map(work => (
       <a href={`/works/${work.id}`} class="card">
         <img src={work.data.coverImage} alt={work.data.title} class="card_image"/>
-        <video width="600" muted loop autoplay preload="none">
+        <video muted loop autoplay preload="none">
           <source src={work.data.previewWebm} type="video/webm" />
         </video>
         <h3 class="card-info">{work.data.title}</h3>
@@ -132,7 +132,7 @@ const bgImage = imagePath || '/images/work/moomoocow/moomoocow_1.png';
 
   .img-bg {
     background: var(--bg-url) center / cover no-repeat; 
-    min-width: 100vw;
+    min-width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -170,6 +170,13 @@ const bgImage = imagePath || '/images/work/moomoocow/moomoocow_1.png';
     padding: 0 10rem 0 10rem;
     
   }
+
+  @media (max-width: 768px) {
+  .about-text {
+    padding: 0 1rem 0 1rem; /* much more reasonable for mobile */
+  }
+}
+
   .projects { background: rgba(255,255,255,0.01); }
   .contact { background: rgba(255,255,255,0.015); }
 
@@ -218,5 +225,4 @@ const bgImage = imagePath || '/images/work/moomoocow/moomoocow_1.png';
     margin-bottom: var(--spacing-md);
     text-shadow: 0 2px 4px rgba(0,0,0,0.8);
   }
-
 </style>

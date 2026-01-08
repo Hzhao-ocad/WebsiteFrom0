@@ -1,8 +1,8 @@
 ---
-title: "我的摄影集"
+title: "Moo Moo Cow"
 description: "这是一段关于作品的简短介绍"
 coverImage: "/images/work/moomoocow/moomoocow_1.png"
-videoUrl: "https://www.youtube.com/watch?v=e1Qtx6b207E5"
+videoUrl: "https://www.youtube.com/watch?v=e1Qtx6b207E"
 previewWebm: "/webm/works/thumbnails/moomoocow.webm"
 galleryImages:
   - "/images/work/moomoocow/moomoocow_1.png"
@@ -10,4 +10,7 @@ galleryImages:
 tags: ["Animation", "Unreal Engine"]
 publishDate: 2024-05-20
 isFeatured: true
+detailDescription:
+  - "Moomoocow is an exprimental piece in the intersection of Digital space and Digital brutality."
+  - "Moomoocow is an exprimental piece in the in."
 ---

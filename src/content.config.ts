@@ -13,6 +13,8 @@ const worksCollection = defineCollection({
     tags: z.array(z.string()),
     publishDate: z.date(),
     isFeatured: z.boolean().default(false),
+    detailDescription: z.array(z.string()).default([]).optional(),
+    heroDescription: z.string().optional(),
   }),
 });
 

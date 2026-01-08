@@ -56,4 +56,35 @@
   nav a:hover {
     color: white;
   }
+
+  @media (max-width: 768px) {
+  .header-container {
+    /* Reduce padding so the logo and nav have more room */
+    padding: 0.75rem 0.5rem;
+  }
+
+  .logo {
+    font-size: 0.85rem; /* Shrink logo slightly */
+    letter-spacing: 1px;
+  }
+
+  nav {
+    /* Reduce the gap between links significantly */
+    gap: 0.75rem; 
+  }
+
+  nav a {
+    font-size: 0.8rem; /* Smaller font for links */
+  }
+}
+
+/* VERY IMPORTANT: Add this to prevent the header from expanding the page */
+.main-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  box-sizing: border-box; /* Ensures padding doesn't add to width */
+}
 </style>

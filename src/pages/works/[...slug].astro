@@ -14,7 +14,9 @@ const { work } = Astro.props;
 const { Content } = await render(work);
 const title = `${work.data.title} - Harry Zhao`;
 const firstImage = work.data.galleryImages?.[0] || work.data.coverImage;
-const secondImage = work.data.galleryImages?.[1];
+const galleryImages = work.data.galleryImages || [];
+const detailDescriptions = work.data.detailDescription || [];
+const maxItems = Math.max(galleryImages.length, detailDescriptions.length);
 ---
 
 <Layout title={title}>
@@ -22,56 +24,75 @@ const secondImage = work.data.galleryImages?.[1];
   <section class="hero-section" style={`background-image: url('${firstImage}');`}>
     <div class="hero-overlay"></div>
     <h1 class="hero-title">{work.data.title}</h1>
-  </section>
-
-  <!-- Video Section -->
-  {work.data.videoUrl && (
-    <section class="video-section">
-      <div class="video-wrapper">
-        <iframe 
-          src={work.data.videoUrl.replace('watch?v=', 'embed/')} 
-          title={work.data.title}
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen>
-        </iframe>
+    
+    <!-- Video or Image + Description - visually inside hero -->
+    {work.data.videoUrl? (
+      <div class="video-container">
+        <div class="video-wrapper">
+          <iframe 
+            src={work.data.videoUrl.replace('watch?v=', 'embed/')} 
+            title={work.data.title}
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen>
+          </iframe>
+        </div>
       </div>
-    </section>
-  )}
-
-  <!-- Full Width Image Section -->
-  {secondImage && (
-    <section class="fullwidth-image-section">
-      <img src={secondImage} alt={work.data.title} class="fullwidth-image" />
-    </section>
-  )}
-
-  <!-- Text Content Section -->
-  <section class="content-section">
-    <div class="content-container">
-      <Content />
-    </div>
+    ) : (
+      <div class="hero-content">
+        {galleryImages[0] && (
+          <div class="video-container">
+            <img src={galleryImages[0]} alt={work.data.title} class="hero-image" />
+          </div>
+        )}
+        {work.data.heroDescription && (
+          <div class="hero-text-container">
+            <p class="hero-description">{work.data.heroDescription}</p>
+          </div>
+        )}
+      </div>
+    )}
   </section>
+
+  <!-- Interleaved Content: Descriptions and Gallery Images -->
+  {Array.from({ length: maxItems }).map((_, index) => (
+    <>
+      {detailDescriptions[index] && (
+        <section class="content-section">
+          <div class="content-container">
+            <p>{detailDescriptions[index]}</p>
+          </div>
+        </section>
+      )}
+      {galleryImages[index] && (
+        <section class="fullwidth-image-section">
+          <img src={galleryImages[index]} alt={`${work.data.title} - Image ${index + 1}`} class="fullwidth-image" />
+        </section>
+      )}
+    </>
+  ))}
 </Layout>
 
 <style>
   /* Hero Section */
   .hero-section {
     position: relative;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    background-size: cover;
+    justify-content: flex-start;
+    padding-top: 15vh;
+    background-size: auto;
     background-position: center;
-    background-repeat: no-repeat;
+    background-repeat: repeat;
   }
 
   .hero-overlay {
     position: absolute;
     inset: 0;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     background: rgba(0, 0, 0, 0.4);
   }
 
@@ -83,24 +104,20 @@ const secondImage = work.data.galleryImages?.[1];
     text-align: center;
     color: white;
     text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
-    padding: 0 2rem;
   }
 
-  /* Video Section */
-  .video-section {
-    padding: 4rem 2rem;
-    background: rgba(0, 0, 0, 0.2);
+  /* Video Container - inside hero */
+  .video-container {
+    position: relative;
+    z-index: 2;
+    width: 65vw;
+    max-width: 1000px;
+    margin-top: 5vh;
   }
 
   .video-wrapper {
     position: relative;
     padding-bottom: 56.25%;
-    height: 0;
-    max-width: 1200px;
-    margin: 0 auto;
-    border-radius: 12px;
-    overflow: hidden;
-    background: rgba(0, 0, 0, 0.5);
   }
 
   .video-wrapper iframe {
@@ -109,23 +126,56 @@ const secondImage = work.data.galleryImages?.[1];
     left: 0;
     width: 100%;
     height: 100%;
+    object-fit: contain;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    width: 65vw;
+    max-width: 1000px;
+    margin-top: 5vh;
+    display: flex;
+    flex-direction: column;
+    gap: 3vh;
+  }
+
+  .hero-image {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .hero-text-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-description {
+    font-size: 1.5rem;
+    line-height: 1.8;
+    color: white;
+    text-align: center;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
   }
 
   /* Full Width Image Section */
   .fullwidth-image-section {
     width: 100%;
-    overflow: hidden;
+    display: flex;
+    justify-content: center;
   }
 
   .fullwidth-image {
-    width: 100%;
+    width: 85%;
+    max-width: 1200px;
     height: auto;
     display: block;
   }
 
   /* Content Section */
   .content-section {
-    padding: 4rem 2rem;
   }
 
   .content-container {
@@ -181,12 +231,16 @@ const secondImage = work.data.galleryImages?.[1];
       font-size: 2.5rem;
     }
 
-    .video-section {
-      padding: 2rem 1rem;
+    .video-container {
+      width: 90vw;
     }
 
-    .content-section {
-      padding: 2rem 1rem;
+    .hero-content {
+      width: 90vw;
+    }
+
+    .hero-description {
+      font-size: 1.2rem;
     }
 
     .content-container {
@@ -199,6 +253,10 @@ const secondImage = work.data.galleryImages?.[1];
 
     .content-container :global(h3) {
       font-size: 1.25rem;
+    }
+
+    .fullwidth-image {
+      width: 100%;
     }
   }
 </style>
