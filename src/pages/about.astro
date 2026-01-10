@@ -26,23 +26,20 @@ const title = "About - Harry Zhao";
       <!-- Bio -->
       <div class="bio">
         <h2 class="bio-title">Harry Zhao</h2>
-        <p class="bio-subtitle">Digital Media | Physical Computing | Creative Technologist</p>
+        <p class="bio-subtitle">Digital Media | Physical Computing | Interactive Design</p>
         
         <div class="bio-text">
           <p>
-            Hello! I'm Harry Zhao, a creative technologist specializing in digital media 
-            and physical computing. I love blending art and technology to create immersive 
-            experiences that push the boundaries of what's possible.
+            Harry Zhao is a multi-media artist specializing in physical computing, interactive design and digital media. He explores the boundaries between the material world and digital spaces.
           </p>
+          <br>
           <p>
-            My work spans across various mediums including animation, interactive installations, 
-            and digital art. I'm passionate about exploring the intersection of creativity and 
-            technology, always looking for new ways to tell stories and engage audiences.
+            His work spans across various mediums including animation, interactive installations, 
+            ,digital art and mixed media. 
           </p>
-
+          <br>
           <p>
-            Currently based in Toronto, I'm always open to collaborations and new opportunities. 
-            Feel free to reach out if you'd like to work together!
+            Harry is currently based in Toronto, Canada, pursuing MFA in Digital Futures at OCAD University.
           </p>
         </div>
       </div>
@@ -57,10 +54,15 @@ const title = "About - Harry Zhao";
       
       <div class="experience-list">
         <div class="experience-item">
-          <div class="experience-date">2020 - Present</div>
           <div class="experience-details">
-            <h3>OCAD University</h3>
-            <p>Digital Futures Program</p>
+            <h3>Schoolf of the Art Insititude of Chicago (SAIC)</h3>
+            <p>BFA in Fine Arts with an emphasis in Art and Technology</p>
+            <div class="experience-date">2019 - 2024</div>
+          </div>
+          <div class="experience-details">
+            <h3>Ontario College of Art and Design University (OCAD U)</h3>
+            <p>MFA in Digital Futures</p>
+            <div class="experience-date">2024 - Present</div>
           </div>
         </div>
         
@@ -146,11 +148,12 @@ const title = "About - Harry Zhao";
   }
 
   .bio-text p {
+    
     font-size: 1.05rem;
     line-height: 1.8;
     color: rgba(255,255,255,0.85);
     margin-bottom: 1rem;
-    text-align: left;
+    text-align: center;
   }
 
   /* Skills Section */
@@ -160,10 +163,11 @@ const title = "About - Harry Zhao";
   }
 
   .section-title {
-    font-size: 1.75rem;
+    font-size: 2.25rem;
     font-weight: 400;
     text-align: center;
     margin-bottom: 2rem;
+    font-family: "DM Serif Display", serif; 
   }
 
   .skills-grid {
@@ -228,7 +232,8 @@ const title = "About - Harry Zhao";
 
   .experience-item {
     display: flex;
-    gap: 2rem;
+    flex-direction: column;
+    gap: 1rem;
     padding: 1.5rem 0;
     border-bottom: 1px solid rgba(255,255,255,0.1);
   }
@@ -265,14 +270,14 @@ const title = "About - Harry Zhao";
   }
 
   .cta-section p {
-    color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.02);
     margin: 0 0 1.5rem 0;
   }
 
   .cta-button {
     display: inline-block;
     padding: 0.75rem 2rem;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.02);
     color: white;
     text-decoration: none;
     border-radius: 8px;
