@@ -1,0 +1,52 @@
+Clean. Here's what was built and what you need to do next.
+
+---
+
+## What was built
+
+```
+studio/
+  sanity.config.ts          ← Studio config (projectId from .env)
+  schemaTypes/work.ts       ← Full Sanity work schema
+  schemaTypes/index.ts
+  package.json / tsconfig.json
+
+src/lib/
+  sanityClient.ts           ← @sanity/client + urlFor() helper
+  queries.ts                ← GROQ queries + TypeScript types
+
+src/pages/works/
+  index.astro               ← Now fetches from Sanity, images via CDN
+  [...slug].astro           ← Renders flexible body blocks (text/image/video)
+```
+
+**Key improvement:** The old parallel `galleryImages[n]` + `detailDescription[n]` arrays are replaced by a single ordered `body` array. In Sanity Studio you drag blocks around freely — add a paragraph, then an image, then another paragraph, etc.
+
+---
+
+## To go live — 3 steps
+
+**1. Create a Sanity project**
+```bash
+# In the studio/ folder:
+cd studio
+npm install
+npx sanity init --env
+# Follow prompts → creates project at sanity.io/manage
+```
+This writes your project ID into a `.env.local` file in `studio/`.
+
+**2. Fill in `.env`** (root of the project)
+```
+SANITY_PROJECT_ID=abc123xyz    ← from sanity.io/manage
+SANITY_DATASET=production
+```
+Also add these as environment variables in your Vercel project settings.
+
+**3. Enter your works in Sanity Studio**
+```bash
+cd studio && npm run dev   # opens Studio at localhost:3333
+```
+Add each work with images uploaded directly to Sanity (no more `/public/images/` manual management). Then re-deploy and the Astro build will pull all data from Sanity.
+
+The old `.md` files in `src/content/works/` can be deleted once all works are entered in Sanity.
