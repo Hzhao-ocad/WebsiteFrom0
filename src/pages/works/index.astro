@@ -3,22 +3,39 @@ import Layout from "../../layouts/layout.astro";
 import { getAllWorks } from "../../lib/queries";
 import { urlFor } from "../../lib/sanityClient";
 
-const title = "All Works - Harry Zhao";
+const title = "Projects - Harry Zhao";
 const works = await getAllWorks();
+
+const featuredTags = [
+  "Physical Computing",
+  "Animation",
+  "Sculpture",
+  "Interactive",
+  "Game",
+  "3D"
+];
 ---
 
 <Layout title={title}>
   <section class="page-header">
     <div class="container">
-      <h1>All Works</h1>
-      <p class="page-subtitle">A collection of my projects and creative work</p>
+      <h1>Projects</h1>
+    </div>
+  </section>
+
+  <section class="tag-filter">
+    <div class="tag-filter-container">
+      <button class="filter-tag active" data-tag="all">All</button>
+      {featuredTags.map(tag => (
+        <button class="filter-tag" data-tag={tag}>{tag}</button>
+      ))}
     </div>
   </section>
 
   <section class="works-section">
     <div class="works-grid">
       {works.map(work => (
-        <a href={`/works/${work.slug.current}`} class="work-card">
+        <a href={`/works/${work.slug.current}`} class="work-card" data-tags={JSON.stringify(work.tags || [])}>
           <div class="work-image-wrapper">
             <img
               src={urlFor(work.coverImage).width(800).height(500).fit('crop').url()}
@@ -30,14 +47,9 @@ const works = await getAllWorks();
                 <source src={work.previewVideoUrl} type="video/webm" />
               </video>
             )}
-          </div>
-          <div class="work-info">
-            <h3 class="work-title">{work.title}</h3>
-            <p class="work-description">{work.description}</p>
-            <div class="work-tags">
-              {work.tags?.map(tag => (
-                <span class="tag">{tag}</span>
-              ))}
+            <div class="work-overlay">
+              <h3 class="work-title">{work.title}</h3>
+              <p class="work-description">{work.description}</p>
             </div>
           </div>
         </a>
@@ -50,18 +62,12 @@ const works = await getAllWorks();
   .page-header {
     padding: 4rem 2rem 2rem;
     text-align: center;
-    background: rgba(255,255,255,0.02);
   }
 
   .page-header h1 {
     font-size: 2.5rem;
     font-weight: 300;
-    margin-bottom: 0.5rem;
-  }
-
-  .page-subtitle {
-    color: rgba(255,255,255,0.6);
-    font-size: 1.1rem;
+    margin-bottom: 0;
   }
 
   .works-section {
@@ -90,15 +96,7 @@ const works = await getAllWorks();
     display: block;
     text-decoration: none;
     color: inherit;
-    background: rgba(255,255,255,0.03);
-    border-radius: 12px;
     overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  .work-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   }
 
   .work-image-wrapper {
@@ -134,34 +132,123 @@ const works = await getAllWorks();
     opacity: 1;
   }
 
-  .work-info {
-    padding: 1.25rem;
+  .work-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 1.5rem;
+    box-sizing: border-box;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .work-card:hover .work-overlay {
+    opacity: 1;
   }
 
   .work-title {
     font-size: 1.25rem;
     font-weight: 500;
     margin: 0 0 0.5rem 0;
+    color: #fff;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+  }
+
+  .work-card:hover .work-title {
+    transform: translateY(0);
+    opacity: 1;
   }
 
   .work-description {
     font-size: 0.9rem;
-    color: rgba(255,255,255,0.7);
-    margin: 0 0 1rem 0;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
     line-height: 1.5;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform 0.4s ease 0.05s, opacity 0.4s ease 0.05s;
   }
 
-  .work-tags {
+  .work-card:hover .work-description {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .tag-filter {
+    padding: 0 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .tag-filter-container {
+    max-width: 1400px;
+    margin: 0 auto;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 1.5rem;
+    justify-content: center;
   }
 
-  .tag {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.6rem;
-    background: rgba(255,255,255,0.1);
-    border-radius: 4px;
-    color: rgba(255,255,255,0.8);
+  .filter-tag {
+    font-size: 0.9rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: color 0.2s ease;
+    text-decoration: none;
+  }
+
+  .filter-tag:hover {
+    color: #fff;
+    text-decoration: underline;
+  }
+
+  .filter-tag.active {
+    color: #fff;
+    text-decoration: underline;
+  }
+
+  .work-card.hidden {
+    display: none;
   }
 </style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const filterButtons = document.querySelectorAll('.filter-tag');
+    const workCards = document.querySelectorAll('.work-card');
+
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const selectedTag = button.getAttribute('data-tag');
+
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+
+        workCards.forEach(card => {
+          if (selectedTag === 'all') {
+            card.classList.remove('hidden');
+          } else {
+            const cardTags = JSON.parse(card.getAttribute('data-tags') || '[]');
+            if (cardTags.includes(selectedTag)) {
+              card.classList.remove('hidden');
+            } else {
+              card.classList.add('hidden');
+            }
+          }
+        });
+      });
+    });
+  });
+</script>

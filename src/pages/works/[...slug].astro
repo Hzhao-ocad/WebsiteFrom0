@@ -27,9 +27,24 @@ const bodyHtml = work.body
       components: {
         types: {
           imageBlock: ({ value }: { value: any }) => {
-            const src = value.asset?.url
+            // Handle cases where asset is missing or null
+            if (!value.asset) {
+              console.warn('imageBlock missing asset:', value);
+              return '';
+            }
+
+            // Use dereferenced url if available, otherwise use urlFor with the reference
+            const src = value.asset.url
               ? `${value.asset.url}?w=1200&auto=format`
-              : urlFor(value).width(1200).url();
+              : value.asset._ref
+                ? urlFor(value).width(1200).url()
+                : null;
+
+            if (!src) {
+              console.warn('imageBlock has no valid asset url or ref:', value);
+              return '';
+            }
+
             const alt = value.caption ?? work.title;
             const caption = value.caption
               ? `<figcaption class="image-caption">${value.caption}</figcaption>`
@@ -90,6 +105,28 @@ const bodyHtml = work.body
       </div>
     )}
   </section>
+
+  <!-- Collaborators Section -->
+  {work.collaborators && work.collaborators.length > 0 && (
+    <section class="collaborators-section">
+      <p class="collaborators-text">
+        In Collaboration with: {
+          work.collaborators.map((collab, index) => (
+            <>
+              {collab.url ? (
+                <a href={collab.url} target="_blank" rel="noopener noreferrer" class="collaborator-link">
+                  {collab.name}
+                </a>
+              ) : (
+                <span>{collab.name}</span>
+              )}
+              {index < work.collaborators!.length - 1 && ', '}
+            </>
+          ))
+        }
+      </p>
+    </section>
+  )}
 
   <!-- Body: text blocks, images, video embeds — in the order you set in Sanity -->
   {bodyHtml && (
@@ -182,6 +219,31 @@ const bodyHtml = work.body
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
   }
 
+  /* Collaborators Section */
+  .collaborators-section {
+    width: 100%;
+    max-width: 800px;
+    margin: 3rem auto 2rem;
+    padding: 0 2rem;
+  }
+
+  .collaborators-text {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .collaborator-link {
+    color: #60a5fa;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .collaborator-link:hover {
+    color: #93c5fd;
+    text-decoration: underline;
+  }
+
   /* Body content */
   .body-content {
     width: 100%;
@@ -232,8 +294,8 @@ const bodyHtml = work.body
   }
 
   .body-content :global(figure) {
-    width: 85%;
-    max-width: 1200px;
+    width: 100%;
+    max-width: 800px;
     margin: 0;
   }
 

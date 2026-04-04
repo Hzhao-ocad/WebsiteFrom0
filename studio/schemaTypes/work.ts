@@ -74,6 +74,38 @@ export const workType = defineType({
       initialValue: false,
     }),
     defineField({
+      name: 'collaborators',
+      title: 'Collaborators',
+      description: 'People who collaborated on this work.',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          name: 'collaborator',
+          fields: [
+            defineField({
+              name: 'name',
+              title: 'Name',
+              type: 'string',
+              validation: (Rule) => Rule.required(),
+            }),
+            defineField({
+              name: 'url',
+              title: 'Website URL',
+              description: 'Link to the collaborator\'s website or profile.',
+              type: 'url',
+            }),
+          ],
+          preview: {
+            select: { name: 'name', url: 'url' },
+            prepare({ name, url }: { name: string; url?: string }) {
+              return { title: name, subtitle: url || 'No website' }
+            },
+          },
+        },
+      ],
+    }),
+    defineField({
       name: 'body',
       title: 'Content Body',
       description: 'Add text, images, or video embeds in any order.',

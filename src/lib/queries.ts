@@ -14,6 +14,7 @@ export interface SanityWork {
   tags: string[]
   publishDate: string
   isFeatured: boolean
+  collaborators?: { name: string; url?: string }[]
   body?: BodyBlock[]
 }
 
@@ -40,6 +41,7 @@ const workDetailFields = `
   ${workCardFields},
   videoUrl,
   heroDescription,
+  collaborators,
   body[] {
     ...,
     _type == "imageBlock" => {
