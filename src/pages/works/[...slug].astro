@@ -159,6 +159,14 @@ const bodyHtml = work.body
   {bodyHtml && (
     <div class="body-content" set:html={bodyHtml} />
   )}
+
+  <div id="lightbox" class="lightbox" hidden>
+    <button type="button" class="lightbox-close" aria-label="Close">&times;</button>
+    <div class="lightbox-stage">
+      <img class="lightbox-image" alt="" />
+    </div>
+    <div class="lightbox-hint">scroll to zoom &middot; drag to pan &middot; esc to close</div>
+  </div>
 </Layout>
 
 <script>
@@ -182,6 +190,103 @@ const bodyHtml = work.body
       else if (e.key === 'ArrowRight') show(current + 1);
     });
   });
+
+  // Lightbox with mouse-wheel zoom and drag-to-pan
+  (() => {
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = lightbox?.querySelector<HTMLImageElement>('.lightbox-image');
+    const closeBtn = lightbox?.querySelector<HTMLButtonElement>('.lightbox-close');
+    if (!lightbox || !lightboxImg || !closeBtn) return;
+
+    const MIN_SCALE = 1;
+    const MAX_SCALE = 8;
+    let scale = 1;
+    let tx = 0;
+    let ty = 0;
+    let dragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let dragStartTx = 0;
+    let dragStartTy = 0;
+
+    const apply = () => {
+      lightboxImg.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    };
+    const reset = () => {
+      scale = 1;
+      tx = 0;
+      ty = 0;
+      apply();
+    };
+    const open = (src: string, alt: string) => {
+      lightboxImg.src = src;
+      lightboxImg.alt = alt;
+      reset();
+      lightbox.removeAttribute('hidden');
+      document.body.style.overflow = 'hidden';
+    };
+    const close = () => {
+      lightbox.setAttribute('hidden', '');
+      lightboxImg.src = '';
+      document.body.style.overflow = '';
+      reset();
+    };
+
+    document.querySelectorAll<HTMLElement>('.gallery-slide').forEach((slide) => {
+      slide.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        if (target.closest('.gallery-btn')) return;
+        const img = slide.querySelector<HTMLImageElement>('img');
+        if (img) open(img.src, img.alt);
+      });
+    });
+
+    closeBtn.addEventListener('click', close);
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox || (e.target as HTMLElement).classList.contains('lightbox-stage')) close();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (lightbox.hasAttribute('hidden')) return;
+      if (e.key === 'Escape') close();
+    });
+
+    lightbox.addEventListener('wheel', (e) => {
+      if (lightbox.hasAttribute('hidden')) return;
+      e.preventDefault();
+      const rect = lightboxImg.getBoundingClientRect();
+      const cx = e.clientX - (rect.left + rect.width / 2);
+      const cy = e.clientY - (rect.top + rect.height / 2);
+      const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+      const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * factor));
+      const ratio = next / scale;
+      tx = cx - (cx - tx) * ratio;
+      ty = cy - (cy - ty) * ratio;
+      scale = next;
+      if (scale === 1) { tx = 0; ty = 0; }
+      apply();
+    }, { passive: false });
+
+    lightboxImg.addEventListener('mousedown', (e) => {
+      if (scale === 1) return;
+      dragging = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      dragStartTx = tx;
+      dragStartTy = ty;
+      lightboxImg.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!dragging) return;
+      tx = dragStartTx + (e.clientX - dragStartX);
+      ty = dragStartTy + (e.clientY - dragStartY);
+      apply();
+    });
+    window.addEventListener('mouseup', () => {
+      dragging = false;
+      lightboxImg.style.cursor = '';
+    });
+  })();
 </script>
 
 <style>
@@ -196,9 +301,9 @@ const bodyHtml = work.body
     align-items: center;
     justify-content: flex-start;
     padding-top: 15vh;
-    background-size: auto;
+    background-size: cover;
     background-position: center;
-    background-repeat: repeat;
+    background-repeat: no-repeat;
     overflow: hidden;
   }
 
@@ -217,7 +322,7 @@ const bodyHtml = work.body
     left: 0;
     right: 0;
     height: 30%;
-    background: linear-gradient(to bottom, transparent, #0f172a);
+    background: linear-gradient(to bottom, transparent, #111111);
     pointer-events: none;
     z-index: 1;
   }
@@ -299,13 +404,13 @@ const bodyHtml = work.body
   }
 
   .collaborator-link {
-    color: #60a5fa;
+    color: #fbbf24;
     text-decoration: none;
     transition: color 0.2s ease;
   }
 
   .collaborator-link:hover {
-    color: #93c5fd;
+    color: #fcd34d;
     text-decoration: underline;
   }
 
@@ -342,12 +447,12 @@ const bodyHtml = work.body
   }
 
   .body-content :global(a) {
-    color: #60a5fa;
+    color: #fbbf24;
     text-decoration: underline;
   }
 
   .body-content :global(a:hover) {
-    color: #93c5fd;
+    color: #fcd34d;
   }
 
   /* Image blocks */
@@ -383,30 +488,61 @@ const bodyHtml = work.body
   }
 
   .body-content :global(.image-gallery) {
-    position: relative;
     width: 100%;
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
     outline: none;
+    display: grid;
+    grid-template-columns: 3rem 1fr 3rem;
+    align-items: center;
+    gap: 1rem;
   }
 
   .body-content :global(.gallery-slides) {
+    position: relative;
     width: 100%;
+    aspect-ratio: 16 / 9;
+    background: rgba(0, 0, 0, 0.3);
+    overflow: hidden;
   }
 
   .body-content :global(.gallery-slide) {
+    position: absolute;
+    inset: 0;
     margin: 0;
     width: 100%;
+    height: 100%;
+    max-width: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-in;
   }
 
   .body-content :global(.gallery-slide[hidden]) {
     display: none;
   }
 
-  .body-content :global(.gallery-btn) {
+  .body-content :global(.gallery-slide .fullwidth-image) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .body-content :global(.gallery-slide .image-caption) {
     position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
+    bottom: 0.5rem;
+    left: 0;
+    right: 0;
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.4);
+    padding: 0.4rem 0.75rem;
+  }
+
+  .body-content :global(.gallery-btn) {
     background: rgba(0, 0, 0, 0.5);
     color: white;
     border: none;
@@ -419,21 +555,82 @@ const bodyHtml = work.body
     align-items: center;
     justify-content: center;
     transition: background 0.2s ease;
-    z-index: 2;
   }
 
   .body-content :global(.gallery-btn:hover) {
     background: rgba(0, 0, 0, 0.8);
   }
 
-  .body-content :global(.gallery-prev) { left: 1rem; }
-  .body-content :global(.gallery-next) { right: 1rem; }
-
   .body-content :global(.gallery-counter) {
+    grid-column: 1 / -1;
     text-align: center;
     color: rgba(255, 255, 255, 0.6);
     font-size: 0.9rem;
     margin-top: 0.5rem;
+  }
+
+  /* Lightbox */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.92);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lightbox[hidden] { display: none; }
+
+  .lightbox-stage {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .lightbox-image {
+    max-width: 95vw;
+    max-height: 95vh;
+    transform-origin: center center;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-drag: none;
+    will-change: transform;
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+
+  .lightbox-close:hover { background: rgba(255, 255, 255, 0.2); }
+
+  .lightbox-hint {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
+    pointer-events: none;
   }
 
   /* Video embeds in body */
