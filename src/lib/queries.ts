@@ -21,6 +21,7 @@ export interface SanityWork {
 export type BodyBlock =
   | { _type: 'block'; _key: string; style: string; children: { _key: string; text: string; marks: string[] }[]; markDefs: { _key: string; _type: string; href?: string }[] }
   | { _type: 'imageBlock'; _key: string; asset: object; caption?: string }
+  | { _type: 'imageGallery'; _key: string; images: { _key: string; asset: object; caption?: string }[] }
   | { _type: 'videoEmbed'; _key: string; url: string }
 
 // --- Queries ---
@@ -47,6 +48,13 @@ const workDetailFields = `
     _type == "imageBlock" => {
       ...,
       asset->
+    },
+    _type == "imageGallery" => {
+      ...,
+      images[] {
+        ...,
+        asset->
+      }
     }
   }
 `

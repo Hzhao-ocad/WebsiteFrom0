@@ -148,6 +148,39 @@ export const workType = defineType({
         },
         {
           type: 'object',
+          name: 'imageGallery',
+          title: 'Image Gallery',
+          fields: [
+            defineField({
+              name: 'images',
+              title: 'Images',
+              type: 'array',
+              of: [
+                {
+                  type: 'image',
+                  options: { hotspot: true },
+                  fields: [
+                    defineField({
+                      name: 'caption',
+                      title: 'Caption',
+                      type: 'string',
+                    }),
+                  ],
+                },
+              ],
+              validation: (Rule) => Rule.min(1),
+            }),
+          ],
+          preview: {
+            select: { images: 'images' },
+            prepare({ images }: { images?: unknown[] }) {
+              const count = images?.length ?? 0
+              return { title: 'Image Gallery', subtitle: `${count} image${count === 1 ? '' : 's'}` }
+            },
+          },
+        },
+        {
+          type: 'object',
           name: 'videoEmbed',
           title: 'Video Embed (YouTube)',
           fields: [

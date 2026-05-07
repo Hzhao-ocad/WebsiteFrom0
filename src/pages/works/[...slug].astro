@@ -51,6 +51,33 @@ const bodyHtml = work.body
               : '';
             return `<section class="fullwidth-image-section"><figure><img src="${src}" alt="${alt}" class="fullwidth-image" />${caption}</figure></section>`;
           },
+          imageGallery: ({ value }: { value: any }) => {
+            const images = (value.images ?? []).filter((img: any) => img?.asset);
+            if (images.length === 0) return '';
+
+            const slides = images
+              .map((img: any, i: number) => {
+                const src = img.asset.url
+                  ? `${img.asset.url}?w=1600&auto=format`
+                  : img.asset._ref
+                    ? urlFor(img).width(1600).url()
+                    : null;
+                if (!src) return '';
+                const alt = img.caption ?? `${work.title} - image ${i + 1}`;
+                const caption = img.caption
+                  ? `<figcaption class="image-caption">${img.caption}</figcaption>`
+                  : '';
+                return `<figure class="gallery-slide" data-index="${i}"${i === 0 ? '' : ' hidden'}><img src="${src}" alt="${alt}" class="fullwidth-image" />${caption}</figure>`;
+              })
+              .join('');
+
+            return `<section class="fullwidth-image-section gallery-section"><div class="image-gallery" data-count="${images.length}">
+              <button type="button" class="gallery-btn gallery-prev" aria-label="Previous image">&#8592;</button>
+              <div class="gallery-slides">${slides}</div>
+              <button type="button" class="gallery-btn gallery-next" aria-label="Next image">&#8594;</button>
+              <div class="gallery-counter"><span class="gallery-current">1</span> / ${images.length}</div>
+            </div></section>`;
+          },
           videoEmbed: ({ value }: { value: any }) => {
             const embedUrl = value.url.replace('watch?v=', 'embed/');
             return `<section class="body-video-section"><div class="video-wrapper"><iframe src="${embedUrl}" title="${work.title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div></section>`;
@@ -133,6 +160,29 @@ const bodyHtml = work.body
     <div class="body-content" set:html={bodyHtml} />
   )}
 </Layout>
+
+<script>
+  document.querySelectorAll<HTMLElement>('.image-gallery').forEach((gallery) => {
+    const slides = Array.from(gallery.querySelectorAll<HTMLElement>('.gallery-slide'));
+    const counter = gallery.querySelector<HTMLElement>('.gallery-current');
+    const prev = gallery.querySelector<HTMLButtonElement>('.gallery-prev');
+    const next = gallery.querySelector<HTMLButtonElement>('.gallery-next');
+    if (slides.length === 0) return;
+    let current = 0;
+    const show = (i: number) => {
+      current = (i + slides.length) % slides.length;
+      slides.forEach((s, idx) => s.toggleAttribute('hidden', idx !== current));
+      if (counter) counter.textContent = String(current + 1);
+    };
+    prev?.addEventListener('click', () => show(current - 1));
+    next?.addEventListener('click', () => show(current + 1));
+    gallery.tabIndex = 0;
+    gallery.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') show(current - 1);
+      else if (e.key === 'ArrowRight') show(current + 1);
+    });
+  });
+</script>
 
 <style>
   /* Hero */
@@ -324,6 +374,65 @@ const bodyHtml = work.body
     text-align: center;
     color: rgba(255, 255, 255, 0.5);
     font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
+
+  /* Image gallery */
+  .body-content :global(.gallery-section) {
+    margin: 2rem 0;
+  }
+
+  .body-content :global(.image-gallery) {
+    position: relative;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    outline: none;
+  }
+
+  .body-content :global(.gallery-slides) {
+    width: 100%;
+  }
+
+  .body-content :global(.gallery-slide) {
+    margin: 0;
+    width: 100%;
+  }
+
+  .body-content :global(.gallery-slide[hidden]) {
+    display: none;
+  }
+
+  .body-content :global(.gallery-btn) {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+    z-index: 2;
+  }
+
+  .body-content :global(.gallery-btn:hover) {
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  .body-content :global(.gallery-prev) { left: 1rem; }
+  .body-content :global(.gallery-next) { right: 1rem; }
+
+  .body-content :global(.gallery-counter) {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
     margin-top: 0.5rem;
   }
 
