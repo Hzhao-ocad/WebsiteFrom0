@@ -1,8 +1,11 @@
 ---
 import Layout from "../../layouts/layout.astro";
-import { getAllWorkSlugs, getWorkBySlug } from "../../lib/queries";
-import { urlFor } from "../../lib/sanityClient";
+import { getAllWorkSlugs, getWorkBySlug, getTextStyles } from "../../lib/queries";
+import { urlFor, previewClient } from "../../lib/sanityClient";
 import { toHTML } from "@portabletext/to-html";
+import { stegaClean } from "@sanity/client/stega";
+
+const isPreview = Astro.url.searchParams.get('preview') === '1';
 
 export async function getStaticPaths() {
   const slugs = await getAllWorkSlugs();
@@ -12,7 +15,7 @@ export async function getStaticPaths() {
 }
 
 const { slug } = Astro.params;
-const work = await getWorkBySlug(slug as string);
+const work = await getWorkBySlug(slug as string, isPreview ? previewClient : undefined);
 
 if (!work) {
   return Astro.redirect('/works');
@@ -20,6 +23,58 @@ if (!work) {
 
 const title = `${work.title} - Harry Zhao`;
 const heroImageUrl = urlFor(work.coverImage).width(1600).url();
+
+const textStyles = await getTextStyles();
+const styleVarMap: Record<string, string> = {
+  small: '--text-color-small',
+  normal: '--text-color-normal',
+  h4: '--text-color-h4',
+  h3: '--text-color-h3',
+  h2: '--text-color-h2',
+  h1: '--text-color-h1',
+  blockquote: '--text-color-blockquote',
+  link: '--text-color-link',
+};
+const bodyStyleAttr = textStyles
+  ? Object.entries(textStyles)
+      .filter(([, v]) => typeof v === 'string' && v.length > 0)
+      .map(([k, v]) => `${styleVarMap[k]}: ${v};`)
+      .join(' ')
+  : '';
+
+const buildBlockClassFromStyle = (style: string, extraClasses: string[] = []) => {
+  const align = style.includes('-') ? style.split('-')[1] : 'left';
+  return ['body-text', `align-${align}`, ...extraClasses].filter(Boolean).join(' ');
+};
+
+const blockComponents: Record<string, ({ children }: { children?: string }) => string> = {};
+
+const addBlockStyle = (style: string, tag: string, extraClasses: string[] = []) => {
+  blockComponents[style] = ({ children }) =>
+    `<${tag} class="${buildBlockClassFromStyle(style, extraClasses)}">${children ?? ''}</${tag}>`;
+};
+
+const sizes = ['normal', 'small', 'h1', 'h2', 'h3', 'h4'] as const;
+const aligns = ['left', 'center', 'right'] as const;
+const tagForSize: Record<(typeof sizes)[number], string> = {
+  normal: 'p',
+  small: 'p',
+  h1: 'h1',
+  h2: 'h2',
+  h3: 'h3',
+  h4: 'h4',
+};
+
+sizes.forEach((size) => {
+  addBlockStyle(size, tagForSize[size], size === 'small' ? ['text-small'] : []);
+  aligns
+    .filter((align) => align !== 'left')
+    .forEach((align) => {
+      addBlockStyle(`${size}-${align}`, tagForSize[size], size === 'small' ? ['text-small'] : []);
+    });
+});
+
+addBlockStyle('blockquote', 'blockquote', ['body-quote']);
 
 // Render body blocks to HTML
 const bodyHtml = work.body
@@ -33,11 +88,26 @@ const bodyHtml = work.body
               return '';
             }
 
+            const widthOption = (value.width as string) ?? 'text';
+            const customWidth = (value.customWidth as string | undefined)?.trim();
+            const renderWidth = ({
+              small: 600,
+              text: 1000,
+              medium: 1300,
+              large: 1800,
+              full: 2400,
+              custom: 2400,
+            } as Record<string, number>)[widthOption] ?? 1000;
+            const customStyle =
+              widthOption === 'custom' && customWidth
+                ? ` style="--custom-image-width: ${customWidth};"`
+                : '';
+
             // Use dereferenced url if available, otherwise use urlFor with the reference
             const src = value.asset.url
-              ? `${value.asset.url}?w=1200&auto=format`
+              ? `${value.asset.url}?w=${renderWidth}&auto=format`
               : value.asset._ref
-                ? urlFor(value).width(1200).url()
+                ? urlFor(value).width(renderWidth).url()
                 : null;
 
             if (!src) {
@@ -49,7 +119,7 @@ const bodyHtml = work.body
             const caption = value.caption
               ? `<figcaption class="image-caption">${value.caption}</figcaption>`
               : '';
-            return `<section class="fullwidth-image-section"><figure><img src="${src}" alt="${alt}" class="fullwidth-image" />${caption}</figure></section>`;
+            return `<section class="fullwidth-image-section image-width-${widthOption}"${customStyle}><figure><img src="${src}" alt="${alt}" class="fullwidth-image" />${caption}</figure></section>`;
           },
           imageGallery: ({ value }: { value: any }) => {
             const images = (value.images ?? []).filter((img: any) => img?.asset);
@@ -79,18 +149,15 @@ const bodyHtml = work.body
             </div></section>`;
           },
           videoEmbed: ({ value }: { value: any }) => {
-            const embedUrl = value.url.replace('watch?v=', 'embed/');
+            const cleanUrl = stegaClean(value.url as string);
+            const embedUrl = cleanUrl.replace('watch?v=', 'embed/');
             return `<section class="body-video-section"><div class="video-wrapper"><iframe src="${embedUrl}" title="${work.title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div></section>`;
           },
         },
-        block: {
-          normal: ({ children }: { children?: string }) => `<p>${children ?? ''}</p>`,
-          h2: ({ children }: { children?: string }) => `<h2>${children ?? ''}</h2>`,
-          h3: ({ children }: { children?: string }) => `<h3>${children ?? ''}</h3>`,
-        },
+        block: blockComponents,
         marks: {
           link: ({ children, value }: { children: string; value?: any }) =>
-            `<a href="${value?.href}" target="_blank" rel="noopener noreferrer">${children}</a>`,
+            `<a href="${stegaClean(value?.href ?? '')}" target="_blank" rel="noopener noreferrer">${children}</a>`,
         },
       },
     })
@@ -107,7 +174,7 @@ const bodyHtml = work.body
       <div class="video-container">
         <div class="video-wrapper">
           <iframe
-            src={work.videoUrl.replace('watch?v=', 'embed/')}
+            src={stegaClean(work.videoUrl).replace('watch?v=', 'embed/')}
             title={work.title}
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -141,7 +208,7 @@ const bodyHtml = work.body
           work.collaborators.map((collab, index) => (
             <>
               {collab.url ? (
-                <a href={collab.url} target="_blank" rel="noopener noreferrer" class="collaborator-link">
+                <a href={stegaClean(collab.url)} target="_blank" rel="noopener noreferrer" class="collaborator-link">
                   {collab.name}
                 </a>
               ) : (
@@ -157,7 +224,35 @@ const bodyHtml = work.body
 
   <!-- Body: text blocks, images, video embeds — in the order you set in Sanity -->
   {bodyHtml && (
-    <div class="body-content" set:html={bodyHtml} />
+    <div class="body-content" style={bodyStyleAttr} set:html={bodyHtml} />
+  )}
+
+  {work.relatedWorks && work.relatedWorks.length > 0 && (
+    <section class="related-works-section">
+      <h2 class="related-works-title">You May Also Like</h2>
+      <div class="related-works-grid">
+        {work.relatedWorks.map((related) => (
+          <a href={`/works/${related.slug.current}`} class="related-work-card">
+            <div class="related-work-image-wrapper">
+              <img
+                src={urlFor(related.coverImage).width(800).height(500).fit('crop').url()}
+                alt={related.title}
+                class="related-work-image"
+              />
+              {related.previewVideoUrl && (
+                <video width="600" muted loop autoplay preload="none">
+                  <source src={related.previewVideoUrl} type="video/webm" />
+                </video>
+              )}
+              <div class="related-work-overlay">
+                <h3 class="related-work-title">{related.title}</h3>
+                <p class="related-work-description">{related.description}</p>
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
   )}
 
   <div id="lightbox" class="lightbox" hidden>
@@ -421,8 +516,13 @@ const bodyHtml = work.body
 
   /* Text blocks (rendered from Portable Text) */
   .body-content :global(p),
+  .body-content :global(h1),
   .body-content :global(h2),
-  .body-content :global(h3) {
+  .body-content :global(h3),
+  .body-content :global(h4),
+  .body-content :global(blockquote),
+  .body-content :global(ul),
+  .body-content :global(ol) {
     max-width: 800px;
     margin: 0 auto 1.5rem;
     padding: 0 2rem;
@@ -431,28 +531,100 @@ const bodyHtml = work.body
 
   .body-content :global(p) {
     font-size: 1.1rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-color-normal, #cfcfcf);
+  }
+
+  .body-content :global(ul),
+  .body-content :global(ol) {
+    padding-left: 3.5rem;
+    padding-right: 2rem;
+  }
+
+  .body-content :global(ul) {
+    list-style: disc outside;
+  }
+
+  .body-content :global(ol) {
+    list-style: decimal outside;
+  }
+
+  .body-content :global(li) {
+    font-size: 1.1rem;
+    color: var(--text-color-normal, #cfcfcf);
+    margin-bottom: 0.4rem;
+  }
+
+  .body-content :global(li::marker) {
+    color: var(--text-color-normal, #cfcfcf);
+  }
+
+  .body-content :global(li > ul),
+  .body-content :global(li > ol) {
+    margin: 0.4rem 0 0.4rem;
+    padding-left: 1.5rem;
+    max-width: none;
+  }
+
+  .body-content :global(.text-small) {
+    font-size: 0.95rem;
+    color: var(--text-color-small, #bfbfbf);
+  }
+
+  .body-content :global(h1) {
+    font-size: 2.6rem;
+    font-weight: 400;
+    margin-top: 3.5rem;
+    color: var(--text-color-h1, #ffffff);
   }
 
   .body-content :global(h2) {
     font-size: 2rem;
     font-weight: 400;
     margin-top: 3rem;
+    color: var(--text-color-h2, #ffffff);
   }
 
   .body-content :global(h3) {
     font-size: 1.5rem;
     font-weight: 400;
     margin-top: 2rem;
+    color: var(--text-color-h3, #ffffff);
+  }
+
+  .body-content :global(h4) {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-top: 1.5rem;
+    color: var(--text-color-h4, #ffffff);
+  }
+
+  .body-content :global(.body-quote) {
+    font-size: 1.2rem;
+    font-style: italic;
+    border-left: 3px solid rgba(255, 255, 255, 0.3);
+    padding-left: 1.5rem;
+    color: var(--text-color-blockquote, #d9d9d9);
+  }
+
+  .body-content :global(.align-left) {
+    text-align: left;
+  }
+
+  .body-content :global(.align-center) {
+    text-align: center;
+  }
+
+  .body-content :global(.align-right) {
+    text-align: right;
   }
 
   .body-content :global(a) {
-    color: #fbbf24;
+    color: var(--text-color-link, #fbbf24);
     text-decoration: underline;
   }
 
   .body-content :global(a:hover) {
-    color: #fcd34d;
+    opacity: 0.85;
   }
 
   /* Image blocks */
@@ -467,6 +639,24 @@ const bodyHtml = work.body
     width: 100%;
     max-width: 800px;
     margin: 0;
+  }
+
+  .body-content :global(.image-width-small figure) { max-width: 480px; }
+  .body-content :global(.image-width-text figure)  { max-width: 800px; }
+  .body-content :global(.image-width-medium figure) { max-width: 1000px; }
+  .body-content :global(.image-width-large figure) { max-width: 1400px; }
+  .body-content :global(.image-width-full figure)  { max-width: 100%; }
+  .body-content :global(.image-width-custom figure) { max-width: var(--custom-image-width, 800px); }
+
+  @media (max-width: 768px) {
+    .body-content :global(.image-width-small figure),
+    .body-content :global(.image-width-text figure),
+    .body-content :global(.image-width-medium figure),
+    .body-content :global(.image-width-large figure),
+    .body-content :global(.image-width-full figure),
+    .body-content :global(.image-width-custom figure) {
+      max-width: 100%;
+    }
   }
 
   .body-content :global(.fullwidth-image) {
@@ -654,6 +844,125 @@ const bodyHtml = work.body
     left: 0;
     width: 100%;
     height: 100%;
+  }
+
+  /* You May Also Like */
+  .related-works-section {
+    padding: 4rem 2rem 5rem;
+    max-width: 1400px;
+    margin: 4rem auto 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .related-works-title {
+    font-size: 1.5rem;
+    font-weight: 300;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0 0 2.5rem;
+  }
+
+  .related-works-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+
+  @media (max-width: 1024px) {
+    .related-works-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 600px) {
+    .related-works-grid { grid-template-columns: 1fr; }
+  }
+
+  .related-work-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    overflow: hidden;
+  }
+
+  .related-work-image-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+  }
+
+  .related-work-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .related-work-card:hover .related-work-image {
+    transform: scale(1.05);
+  }
+
+  .related-work-image-wrapper video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .related-work-card:hover video {
+    opacity: 1;
+  }
+
+  .related-work-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 1.5rem;
+    box-sizing: border-box;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .related-work-card:hover .related-work-overlay {
+    opacity: 1;
+  }
+
+  .related-work-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin: 0 0 0.5rem 0;
+    color: #fff;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+  }
+
+  .related-work-card:hover .related-work-title {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .related-work-description {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+    line-height: 1.5;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform 0.4s ease 0.05s, opacity 0.4s ease 0.05s;
+  }
+
+  .related-work-card:hover .related-work-description {
+    transform: translateY(0);
+    opacity: 1;
   }
 
   /* Responsive */

@@ -6,6 +6,7 @@ export interface Props {
 }
 export let title: string = "Harry Zhao - Portfolio"
 
+const isPreview = Astro.url.searchParams.get('preview') === '1';
 ---
 
 <!doctype html>
@@ -49,13 +50,75 @@ export let title: string = "Harry Zhao - Portfolio"
       }
       h1 { margin: 0 0 0.5rem 0; font-size: clamp(1.5rem, 4vw, 2.5rem); }
       p { margin: 0; opacity: 0.9; }
+      .to-top {
+        position: fixed;
+        right: 1.5rem;
+        bottom: 1.5rem;
+        padding: 0.6rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.6);
+        color: var(--fg);
+        text-decoration: none;
+        font-size: 0.9rem;
+        letter-spacing: 0.03em;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(6px);
+        opacity: 0;
+        transform: translateY(8px);
+        pointer-events: none;
+        transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease, border 0.2s ease;
+        z-index: 10;
+      }
+      .to-top.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+      .to-top:hover {
+        transform: translateY(-2px);
+        background: rgba(0, 0, 0, 0.75);
+        border-color: rgba(255, 255, 255, 0.4);
+      }
+      .to-top:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+      }
     </style>
   </head>
   <body>
+    <div id="top"></div>
     <Header />
     
     <main>
       <slot /> </main>
     <Footer />
+    <a class="to-top" href="#top" aria-label="Return to top">Top</a>
+    {isPreview && (
+      <script>
+        import { enableVisualEditing } from '@sanity/visual-editing';
+        enableVisualEditing({
+          refresh: (payload) => {
+            if (payload.source === 'mutation') {
+              window.location.reload();
+              return new Promise(() => {});
+            }
+            return false;
+          },
+        });
+      </script>
+    )}
+    <script>
+      const toTopButton = document.querySelector(".to-top");
+      const toggleToTop = () => {
+        if (!toTopButton) return;
+        if (window.scrollY > 200) {
+          toTopButton.classList.add("is-visible");
+        } else {
+          toTopButton.classList.remove("is-visible");
+        }
+      };
+      toggleToTop();
+      window.addEventListener("scroll", toggleToTop, { passive: true });
+    </script>
   </body>
 </html>

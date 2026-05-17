@@ -1,4 +1,5 @@
 import { client } from './sanityClient'
+import type { SanityClient } from '@sanity/client'
 
 // --- Types ---
 
@@ -16,6 +17,7 @@ export interface SanityWork {
   isFeatured: boolean
   collaborators?: { name: string; url?: string }[]
   body?: BodyBlock[]
+  relatedWorks?: SanityWork[]
 }
 
 export type BodyBlock =
@@ -43,6 +45,9 @@ const workDetailFields = `
   videoUrl,
   heroDescription,
   collaborators,
+  relatedWorks[]-> {
+    ${workCardFields}
+  },
   body[] {
     ...,
     _type == "imageBlock" => {
@@ -65,10 +70,30 @@ export async function getAllWorks(): Promise<SanityWork[]> {
   )
 }
 
-export async function getWorkBySlug(slug: string): Promise<SanityWork | null> {
-  return client.fetch(
+export async function getWorkBySlug(
+  slug: string,
+  fetchClient: SanityClient = client
+): Promise<SanityWork | null> {
+  return fetchClient.fetch(
     `*[_type == "work" && slug.current == $slug][0] { ${workDetailFields} }`,
     { slug }
+  )
+}
+
+export interface TextStyles {
+  small?: string
+  normal?: string
+  h4?: string
+  h3?: string
+  h2?: string
+  h1?: string
+  blockquote?: string
+  link?: string
+}
+
+export async function getTextStyles(): Promise<TextStyles | null> {
+  return client.fetch(
+    `*[_type == "textStyles"][0]{ small, normal, h4, h3, h2, h1, blockquote, link }`
   )
 }
 

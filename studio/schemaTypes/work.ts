@@ -1,4 +1,6 @@
 import { defineField, defineType } from 'sanity'
+import { WordLikePortableTextInput } from '../components/WordLikePortableTextInput.tsx'
+import { StyledBlockRender } from '../components/StyledBlockRender.tsx'
 
 export const workType = defineType({
   name: 'work',
@@ -106,22 +108,67 @@ export const workType = defineType({
       ],
     }),
     defineField({
+      name: 'relatedWorks',
+      title: 'You May Also Like',
+      description: 'Other works to recommend at the bottom of this page. Leave empty to hide the section.',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{ type: 'work' }],
+          options: {
+            filter: ({ document }: { document: { _id?: string } }) => {
+              const id = document?._id?.replace(/^drafts\./, '')
+              return id
+                ? { filter: '_id != $id && !(_id in path("drafts.**"))', params: { id } }
+                : {}
+            },
+          },
+        },
+      ],
+    }),
+    defineField({
       name: 'body',
       title: 'Content Body',
       description: 'Add text, images, or video embeds in any order.',
       type: 'array',
+      components: {
+        input: WordLikePortableTextInput,
+      },
       of: [
         {
           type: 'block',
           styles: [
-            { title: 'Normal', value: 'normal' },
-            { title: 'Heading', value: 'h2' },
-            { title: 'Sub-heading', value: 'h3' },
+            { title: 'Normal', value: 'normal', component: StyledBlockRender },
+            { title: 'Normal Center', value: 'normal-center', component: StyledBlockRender },
+            { title: 'Normal Right', value: 'normal-right', component: StyledBlockRender },
+            { title: 'Heading 1', value: 'h1', component: StyledBlockRender },
+            { title: 'Heading 1 Center', value: 'h1-center', component: StyledBlockRender },
+            { title: 'Heading 1 Right', value: 'h1-right', component: StyledBlockRender },
+            { title: 'Heading 2', value: 'h2', component: StyledBlockRender },
+            { title: 'Heading 2 Center', value: 'h2-center', component: StyledBlockRender },
+            { title: 'Heading 2 Right', value: 'h2-right', component: StyledBlockRender },
+            { title: 'Heading 3', value: 'h3', component: StyledBlockRender },
+            { title: 'Heading 3 Center', value: 'h3-center', component: StyledBlockRender },
+            { title: 'Heading 3 Right', value: 'h3-right', component: StyledBlockRender },
+            { title: 'Heading 4', value: 'h4', component: StyledBlockRender },
+            { title: 'Heading 4 Center', value: 'h4-center', component: StyledBlockRender },
+            { title: 'Heading 4 Right', value: 'h4-right', component: StyledBlockRender },
+            { title: 'Small', value: 'small', component: StyledBlockRender },
+            { title: 'Small Center', value: 'small-center', component: StyledBlockRender },
+            { title: 'Small Right', value: 'small-right', component: StyledBlockRender },
+            { title: 'Quote', value: 'blockquote' },
+          ],
+          lists: [
+            { title: 'Bullet', value: 'bullet' },
+            { title: 'Numbered', value: 'number' },
           ],
           marks: {
             decorators: [
               { title: 'Bold', value: 'strong' },
               { title: 'Italic', value: 'em' },
+              { title: 'Underline', value: 'underline' },
+              { title: 'Code', value: 'code' },
             ],
             annotations: [
               {
@@ -133,19 +180,7 @@ export const workType = defineType({
             ],
           },
         },
-        {
-          type: 'image',
-          name: 'imageBlock',
-          title: 'Image',
-          options: { hotspot: true },
-          fields: [
-            defineField({
-              name: 'caption',
-              title: 'Caption',
-              type: 'string',
-            }),
-          ],
-        },
+        { type: 'imageBlock' },
         {
           type: 'object',
           name: 'imageGallery',
