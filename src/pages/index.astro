@@ -2,21 +2,25 @@
 import Layout from "../layouts/layout.astro";
 const title = "Harry Zhao - Portfolio";
 
-const { imagePath } = Astro.props;
-
 import { getFeaturedWorks } from '../lib/queries';
 import { urlFor } from '../lib/sanityClient';
 
 // Get featured works from Sanity
 const featuredWorks = await getFeaturedWorks();
 const top6FeaturedWorks = featuredWorks.sort(() => Math.random() - 0.5).slice(0, 8);
-
-// 可以在这里设置默认值，防止没传参数时出错
-const bgImage = imagePath || '/images/work/moomoocow/moomoocow_1.png';
 ---
 
 <Layout title={title}>
-  <section class="full-section img-bg" style={{ "--bg-url": `url('/images/work/moomoocow/moomoocow_1.png')` }}>
+  <section class="full-section video-bg">
+    <div class="bg-video-wrapper">
+      <iframe
+        class="bg-video"
+        src="https://player.vimeo.com/video/1193420841?background=1&autoplay=1&loop=1&muted=1&autopause=0&dnt=1"
+        allow="autoplay; fullscreen"
+        allowfullscreen
+        title="Hero background"
+      ></iframe>
+    </div>
     <div class="content-wrapper container">
       <div class="hero">
         <h1>Harry Zhao</h1>
@@ -133,6 +137,31 @@ const bgImage = imagePath || '/images/work/moomoocow/moomoocow_1.png';
     align-items: center;
     justify-content: center;
     color: white;
+  }
+  .video-bg {
+    overflow: hidden;
+    color: white;
+  }
+  .bg-video-wrapper {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .bg-video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    height: 56.25vw;
+    min-width: 177.78vh;
+    min-height: 100vh;
+    transform: translate(-50%, -50%);
+    border: 0;
+  }
+  .video-bg .content-wrapper {
+    z-index: 1;
   }
   .black-bg{
   }

@@ -155,6 +155,10 @@ const bodyHtml = work.body
           },
         },
         block: blockComponents,
+        listItem: ({ children, value }: { children: string; value?: any }) => {
+          const level = Number(value?.level) || 1;
+          return `<li data-level="${level}">${children}</li>`;
+        },
         marks: {
           link: ({ children, value }: { children: string; value?: any }) =>
             `<a href="${stegaClean(value?.href ?? '')}" target="_blank" rel="noopener noreferrer">${children}</a>`,
@@ -561,9 +565,16 @@ const bodyHtml = work.body
   .body-content :global(li > ul),
   .body-content :global(li > ol) {
     margin: 0.4rem 0 0.4rem;
-    padding-left: 1.5rem;
+    padding-left: 0;
+    padding-right: 0;
     max-width: none;
   }
+
+  .body-content :global(li[data-level="2"]) { margin-left: 1.5rem; }
+  .body-content :global(li[data-level="3"]) { margin-left: 3rem; }
+  .body-content :global(li[data-level="4"]) { margin-left: 4.5rem; }
+  .body-content :global(li[data-level="5"]) { margin-left: 6rem; }
+  .body-content :global(li[data-level="6"]) { margin-left: 7.5rem; }
 
   .body-content :global(.text-small) {
     font-size: 0.95rem;
