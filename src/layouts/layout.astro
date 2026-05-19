@@ -17,13 +17,16 @@ const isPreview = Astro.url.searchParams.get('preview') === '1';
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://player.vimeo.com">
+    <link rel="preconnect" href="https://i.vimeocdn.com" crossorigin>
+    <link rel="preconnect" href="https://f.vimeocdn.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">.
 
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <style>
-      :root { --bg1: #111111; --bg2: #1c1c1c; --fg: #f5f5f5; --accent: #fbbf24; --heading-font: "DM Serif Display", serif;}
+      :root { --bg1: #111111; --bg2: #1c1c1c; --fg: #f5f5f5; --accent: #fbbf24; --heading-font: "DM Serif Display", serif; --header-height: 24px;}
       html, body { height: 100%; margin: 0; }
       /* Apply the new font only to headings */
       h1, h2, h3, .section-heading {
@@ -119,6 +122,20 @@ const isPreview = Astro.url.searchParams.get('preview') === '1';
       };
       toggleToTop();
       window.addEventListener("scroll", toggleToTop, { passive: true });
+
+      const header = document.querySelector<HTMLElement>(".main-header");
+      const syncHeaderHeight = () => {
+        if (!header) return;
+        document.documentElement.style.setProperty(
+          "--header-height",
+          header.offsetHeight + "px"
+        );
+      };
+      syncHeaderHeight();
+      window.addEventListener("resize", syncHeaderHeight);
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(syncHeaderHeight);
+      }
     </script>
   </body>
 </html>

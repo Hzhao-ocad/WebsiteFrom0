@@ -13,12 +13,21 @@ const top6FeaturedWorks = featuredWorks.sort(() => Math.random() - 0.5).slice(0,
 <Layout title={title}>
   <section class="full-section video-bg">
     <div class="bg-video-wrapper">
+      <img
+        class="bg-poster"
+        src="/images/hero-poster.jpg"
+        alt=""
+        aria-hidden="true"
+        fetchpriority="high"
+      />
       <iframe
         class="bg-video"
         src="https://player.vimeo.com/video/1193420841?background=1&autoplay=1&loop=1&muted=1&autopause=0&dnt=1"
         allow="autoplay; fullscreen"
         allowfullscreen
+        loading="eager"
         title="Hero background"
+        onload="this.classList.add('is-ready')"
       ></iframe>
     </div>
     <div class="content-wrapper container">
@@ -141,24 +150,48 @@ const top6FeaturedWorks = featuredWorks.sort(() => Math.random() - 0.5).slice(0,
   .video-bg {
     overflow: hidden;
     color: white;
+    box-sizing: border-box;
+    padding-top: var(--header-height);
   }
   .bg-video-wrapper {
     position: absolute;
-    inset: 0;
+    top: var(--header-height);
+    right: 0;
+    bottom: 0;
+    left: 0;
     overflow: hidden;
     z-index: 0;
     pointer-events: none;
+    background: var(--bg1);
   }
-  .bg-video {
+  .bg-poster {
     position: absolute;
-    top: 50%;
+    top: 0;
     left: 50%;
     width: 100vw;
     height: 56.25vw;
     min-width: 177.78vh;
-    min-height: 100vh;
-    transform: translate(-50%, -50%);
+    min-height: calc(100vh - var(--header-height));
+    transform: translateX(-50%);
+    object-fit: cover;
+    z-index: 0;
+  }
+  .bg-video {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 100vw;
+    height: 56.25vw;
+    min-width: 177.78vh;
+    min-height: calc(100vh - var(--header-height));
+    transform: translateX(-50%);
     border: 0;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 1;
+  }
+  .bg-video.is-ready {
+    opacity: 1;
   }
   .video-bg .content-wrapper {
     z-index: 1;
