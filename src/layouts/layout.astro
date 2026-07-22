@@ -1,12 +1,43 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { SITE_NAME, DEFAULT_OG_IMAGE, absoluteUrl } from '../lib/site';
+
 export interface Props {
   title?: string
+  /** ~150–160 char unique meta description. */
+  description?: string
+  /** Absolute URL or site-root path for the social preview image. */
+  ogImage?: string
+  /** 'website' for pages, 'article' for posts. */
+  ogType?: string
+  /** One JSON-LD object or an array of them, injected into <head>. */
+  jsonLd?: object | object[]
+  /** Set true to keep a route out of the index (e.g. utility pages). */
+  noindex?: boolean
 }
-export let title: string = "Harry Zhao - Portfolio"
+
+const {
+  title = "Harry Zhao — Artist & Physical Computing / Robotics (Toronto)",
+  description = "Harry Zhao is a Toronto-based artist and researcher building Iterative Creatures — robots with their own agency. Physical computing, interactive installation, digital media.",
+  ogImage = DEFAULT_OG_IMAGE,
+  ogType = "website",
+  jsonLd,
+  noindex = false,
+} = Astro.props as Props;
 
 const isPreview = Astro.url.searchParams.get('preview') === '1';
+
+// Absolute canonical URL for this route (single source of truth in site.ts).
+const canonicalURL = absoluteUrl(Astro.url.pathname);
+// Descriptions are authored (or trimmed by the page) to length — just normalize
+// whitespace here rather than re-truncating and risking a mid-word ellipsis.
+const metaDescription = description.replace(/\s+/g, ' ').trim();
+const ogImageUrl = ogImage.startsWith('http') ? ogImage : absoluteUrl(ogImage);
+
+const jsonLdBlocks = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+const wrapLd = (node: object) =>
+  '@context' in node ? node : { '@context': 'https://schema.org', ...node };
 ---
 
 <!doctype html>
@@ -20,11 +51,38 @@ const isPreview = Astro.url.searchParams.get('preview') === '1';
     <link rel="preconnect" href="https://player.vimeo.com">
     <link rel="preconnect" href="https://i.vimeocdn.com" crossorigin>
     <link rel="preconnect" href="https://f.vimeocdn.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">.
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
+
     <title>{title}</title>
+    <meta name="description" content={metaDescription} />
+    <link rel="canonical" href={canonicalURL} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="author" content="Harry Zhao" />
+
+    {/* Open Graph */}
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={metaDescription} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_CA" />
+
+    {/* Twitter */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={metaDescription} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    {/* Structured data */}
+    {jsonLdBlocks.map((block) => (
+      <script is:inline type="application/ld+json" set:html={JSON.stringify(wrapLd(block))} />
+    ))}
     <style>
       :root { --bg1: #111111; --bg2: #1c1c1c; --fg: #f5f5f5; --accent: #fbbf24; --heading-font: "DM Serif Display", serif; --header-height: 24px;}
       html, body { height: 100%; margin: 0; }

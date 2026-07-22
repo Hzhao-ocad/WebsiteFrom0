@@ -2,6 +2,7 @@
 import Layout from "../../layouts/layout.astro";
 import { getAllWorkSlugs, getWorkBySlug, getTextStyles } from "../../lib/queries";
 import { urlFor, previewClient } from "../../lib/sanityClient";
+import { PERSON_ID, SITE_NAME, absoluteUrl, truncate } from "../../lib/site";
 import { toHTML } from "@portabletext/to-html";
 import { stegaClean } from "@sanity/client/stega";
 
@@ -21,8 +22,28 @@ if (!work) {
   return Astro.redirect('/works');
 }
 
-const title = `${work.title} - Harry Zhao`;
+const title = `${work.title} — Harry Zhao`;
 const heroImageUrl = urlFor(work.coverImage).width(1600).url();
+
+// SEO: description from the project's short intro (fallback to a sensible default),
+// per-project social image, and CreativeWork structured data.
+const rawDescription = stegaClean(work.description || work.heroDescription || '');
+const description = rawDescription
+  ? truncate(rawDescription, 155)
+  : `${work.title} — a project by Harry Zhao exploring physical computing, robotics, and interactive media.`;
+const ogImageUrl = urlFor(work.coverImage).width(1200).height(630).fit('crop').url();
+const canonicalUrl = absoluteUrl(`/works/${work.slug.current}`);
+
+const creativeWorkSchema = {
+  '@type': 'CreativeWork',
+  name: stegaClean(work.title),
+  description,
+  image: ogImageUrl,
+  url: canonicalUrl,
+  ...(work.publishDate ? { dateCreated: work.publishDate } : {}),
+  ...(work.tags && work.tags.length ? { keywords: work.tags.map((t) => stegaClean(t)).join(', ') } : {}),
+  creator: { '@type': 'Person', '@id': PERSON_ID, name: SITE_NAME },
+};
 
 const textStyles = await getTextStyles();
 const styleVarMap: Record<string, string> = {
@@ -119,7 +140,7 @@ const bodyHtml = work.body
             const caption = value.caption
               ? `<figcaption class="image-caption">${value.caption}</figcaption>`
               : '';
-            return `<section class="fullwidth-image-section image-width-${widthOption}"${customStyle}><figure><img src="${src}" alt="${alt}" class="fullwidth-image" />${caption}</figure></section>`;
+            return `<section class="fullwidth-image-section image-width-${widthOption}"${customStyle}><figure><img src="${src}" alt="${alt}" class="fullwidth-image" loading="lazy" decoding="async" />${caption}</figure></section>`;
           },
           imageGallery: ({ value }: { value: any }) => {
             const images = (value.images ?? []).filter((img: any) => img?.asset);
@@ -137,7 +158,7 @@ const bodyHtml = work.body
                 const caption = img.caption
                   ? `<figcaption class="image-caption">${img.caption}</figcaption>`
                   : '';
-                return `<figure class="gallery-slide" data-index="${i}"${i === 0 ? '' : ' hidden'}><img src="${src}" alt="${alt}" class="fullwidth-image" />${caption}</figure>`;
+                return `<figure class="gallery-slide" data-index="${i}"${i === 0 ? '' : ' hidden'}><img src="${src}" alt="${alt}" class="fullwidth-image" loading="lazy" decoding="async" />${caption}</figure>`;
               })
               .join('');
 
@@ -168,7 +189,7 @@ const bodyHtml = work.body
   : '';
 ---
 
-<Layout title={title}>
+<Layout title={title} description={description} ogType="article" ogImage={ogImageUrl} jsonLd={creativeWorkSchema}>
   <!-- Hero Section -->
   <section class="hero-section" style={`background-image: url('${heroImageUrl}');`}>
     <div class="hero-overlay"></div>
@@ -190,9 +211,13 @@ const bodyHtml = work.body
       <div class="hero-content">
         <div class="video-container">
           <img
-            src={urlFor(work.coverImage).width(1000).url()}
-            alt={work.title}
+            src={urlFor(work.coverImage).width(1000).auto('format').url()}
+            srcset={`${urlFor(work.coverImage).width(800).auto('format').url()} 800w, ${urlFor(work.coverImage).width(1200).auto('format').url()} 1200w, ${urlFor(work.coverImage).width(1600).auto('format').url()} 1600w`}
+            sizes="(max-width: 768px) 90vw, 65vw"
+            alt={`${work.title} by Harry Zhao`}
             class="hero-image"
+            loading="eager"
+            fetchpriority="high"
           />
         </div>
         {work.heroDescription && (
@@ -240,8 +265,13 @@ const bodyHtml = work.body
             <div class="related-work-image-wrapper">
               <img
                 src={urlFor(related.coverImage).width(800).height(500).fit('crop').url()}
-                alt={related.title}
+                srcset={`${urlFor(related.coverImage).width(400).height(250).fit('crop').auto('format').url()} 400w, ${urlFor(related.coverImage).width(800).height(500).fit('crop').auto('format').url()} 800w`}
+                sizes="(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                alt={`${related.title} — work by Harry Zhao`}
                 class="related-work-image"
+                loading="lazy"
+                width="800"
+                height="500"
               />
               {related.previewVideoUrl && (
                 <video width="600" muted loop autoplay preload="none">

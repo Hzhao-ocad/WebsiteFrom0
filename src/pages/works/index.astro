@@ -3,7 +3,8 @@ import Layout from "../../layouts/layout.astro";
 import { getAllWorks } from "../../lib/queries";
 import { urlFor } from "../../lib/sanityClient";
 
-const title = "Projects - Harry Zhao";
+const title = "Works — Harry Zhao | Robotics & Interactive Art";
+const description = "Selected projects by Harry Zhao spanning physical computing, robotics, interactive installation, animation, and digital media.";
 const works = await getAllWorks();
 
 const featuredTags = [
@@ -16,10 +17,11 @@ const featuredTags = [
 ];
 ---
 
-<Layout title={title}>
+<Layout title={title} description={description}>
   <section class="page-header">
     <div class="container">
-      <h1>Projects</h1>
+      <h1>Works</h1>
+      <p class="page-subtitle">Robotics, physical computing &amp; interactive art by Harry Zhao</p>
     </div>
   </section>
 
@@ -39,8 +41,13 @@ const featuredTags = [
           <div class="work-image-wrapper">
             <img
               src={urlFor(work.coverImage).width(800).height(500).fit('crop').url()}
-              alt={work.title}
+              srcset={`${urlFor(work.coverImage).width(400).height(250).fit('crop').auto('format').url()} 400w, ${urlFor(work.coverImage).width(800).height(500).fit('crop').auto('format').url()} 800w, ${urlFor(work.coverImage).width(1200).height(750).fit('crop').auto('format').url()} 1200w`}
+              sizes="(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              alt={`${work.title} — work by Harry Zhao`}
               class="work-image"
+              loading="lazy"
+              width="800"
+              height="500"
             />
             {work.previewVideoUrl && (
               <video width="600" muted loop autoplay preload="none">
@@ -67,7 +74,13 @@ const featuredTags = [
   .page-header h1 {
     font-size: 2.5rem;
     font-weight: 300;
-    margin-bottom: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .page-subtitle {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1rem;
+    margin: 0;
   }
 
   .works-section {
