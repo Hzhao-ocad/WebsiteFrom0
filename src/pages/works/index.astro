@@ -4,7 +4,9 @@ import { getAllWorks } from "../../lib/queries";
 import { urlFor } from "../../lib/sanityClient";
 
 const title = "Projects - Harry Zhao";
-const works = await getAllWorks();
+const works = (await getAllWorks()).slice().sort((a, b) => {
+  return new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime();
+});
 
 const featuredTags = [
   "Physical Computing",

@@ -108,3 +108,65 @@ export async function getFeaturedWorks(): Promise<SanityWork[]> {
     `*[_type == "work" && isFeatured == true] | order(publishDate desc) { ${workCardFields} }`
   )
 }
+
+// --- Blog Types ---
+
+export interface SanityBlogPost {
+  _id: string
+  title: string
+  slug: { current: string }
+  publishDate: string
+  heroImage: object
+  excerpt: string
+  tags: string[]
+  body?: BlogBodyBlock[]
+}
+
+export type BlogBodyBlock =
+  | { _type: 'block'; _key: string; style: string; children: { _key: string; text: string; marks: string[] }[]; markDefs: { _key: string; _type: string; href?: string }[] }
+  | { _type: 'imageBlock'; _key: string; asset: object; caption?: string }
+
+// --- Blog Queries ---
+
+const blogCardFields = `
+  _id,
+  title,
+  slug,
+  publishDate,
+  heroImage,
+  excerpt,
+  tags
+`
+
+const blogDetailFields = `
+  ${blogCardFields},
+  body[] {
+    ...,
+    _type == "imageBlock" => {
+      ...,
+      asset->
+    }
+  }
+`
+
+export async function getAllBlogPosts(): Promise<SanityBlogPost[]> {
+  return client.fetch(
+    `*[_type == "blogPost"] | order(publishDate desc) { ${blogCardFields} }`
+  )
+}
+
+export async function getBlogPostBySlug(
+  slug: string,
+  fetchClient: SanityClient = client
+): Promise<SanityBlogPost | null> {
+  return fetchClient.fetch(
+    `*[_type == "blogPost" && slug.current == $slug][0] { ${blogDetailFields} }`,
+    { slug }
+  )
+}
+
+export async function getAllBlogSlugs(): Promise<{ slug: string }[]> {
+  return client.fetch(
+    `*[_type == "blogPost"] { "slug": slug.current }`
+  )
+}
