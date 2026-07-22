@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "harryzhao.art" }],
+      "destination": "https://www.harryzhao.art/$1",
+      "permanent": true
+    }
+  ]
+}
