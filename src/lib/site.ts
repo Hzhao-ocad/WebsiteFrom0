@@ -5,8 +5,8 @@
 export const SITE_URL = 'https://www.harryzhao.art'
 export const SITE_NAME = 'Harry Zhao'
 
-// Default social preview image (1200x630-ish hero still). Absolute URL required.
-export const DEFAULT_OG_IMAGE = `${SITE_URL}/images/hero-poster.jpg`
+// Default social preview image (1200x630 hero still). Absolute URL required.
+export const DEFAULT_OG_IMAGE = `${SITE_URL}/images/og-default.jpg`
 
 // --- Social / profile URLs -------------------------------------------------
 // TODO(owner): replace each empty string with your real, live profile URL.
