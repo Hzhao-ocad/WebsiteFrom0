@@ -1,0 +1,146 @@
+---
+import Layout from "../../layouts/layout.astro";
+import { getAllPosts } from "../../lib/queries";
+import { urlFor } from "../../lib/sanityClient";
+
+const title = "Field Notes — Harry Zhao | Robotics & Physical Computing";
+const description = "Behind-the-scenes technical writing by Harry Zhao on building Iterative Creatures — robotics, physical computing, and interactive installation process notes.";
+
+const posts = await getAllPosts();
+
+const formatDate = (d?: string) =>
+  d
+    ? new Date(d).toLocaleDateString("en-CA", { year: "numeric", month: "long", day: "numeric" })
+    : "";
+---
+
+<Layout title={title} description={description}>
+  <section class="page-header">
+    <div class="container">
+      <h1>Field Notes</h1>
+      <p class="page-subtitle">Behind-the-scenes writing on robotics, physical computing &amp; process</p>
+    </div>
+  </section>
+
+  <section class="notes-section">
+    {posts.length === 0 ? (
+      <p class="notes-empty">No notes published yet — check back soon.</p>
+    ) : (
+      <ul class="notes-list">
+        {posts.map((post) => (
+          <li class="note-card">
+            <a href={`/notes/${post.slug.current}`} class="note-link">
+              {post.coverImage && (
+                <div class="note-image-wrapper">
+                  <img
+                    src={urlFor(post.coverImage).width(800).height(450).fit("crop").auto("format").url()}
+                    srcset={`${urlFor(post.coverImage).width(400).height(225).fit("crop").auto("format").url()} 400w, ${urlFor(post.coverImage).width(800).height(450).fit("crop").auto("format").url()} 800w`}
+                    sizes="(max-width: 700px) 100vw, 700px"
+                    alt={(post.coverImage as any)?.alt || `${post.title} — note by Harry Zhao`}
+                    class="note-image"
+                    loading="lazy"
+                    width="800"
+                    height="450"
+                  />
+                </div>
+              )}
+              <div class="note-body">
+                <div class="note-meta">
+                  <time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+                  {post.relatedWork && <span class="note-project">· {post.relatedWork.title}</span>}
+                </div>
+                <h2 class="note-title">{post.title}</h2>
+                {post.excerpt && <p class="note-excerpt">{post.excerpt}</p>}
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+</Layout>
+
+<style>
+  .page-header {
+    padding: 4rem 2rem 2rem;
+    text-align: center;
+  }
+
+  .page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .page-subtitle {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .notes-section {
+    padding: 1rem 2rem 4rem;
+  }
+
+  .notes-empty {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .notes-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto;
+    max-width: 760px;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .note-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .note-image-wrapper {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .note-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .note-link:hover .note-image {
+    transform: scale(1.03);
+  }
+
+  .note-meta {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 0.35rem;
+  }
+
+  .note-title {
+    font-size: 1.6rem;
+    font-weight: 400;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .note-link:hover .note-title {
+    color: #fbbf24;
+  }
+
+  .note-excerpt {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+    margin: 0;
+  }
+</style>

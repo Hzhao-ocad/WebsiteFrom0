@@ -3,7 +3,7 @@ import Layout from "../../layouts/layout.astro";
 import { getAllWorkSlugs, getWorkBySlug, getTextStyles } from "../../lib/queries";
 import { urlFor, previewClient } from "../../lib/sanityClient";
 import { PERSON_ID, SITE_NAME, absoluteUrl, truncate } from "../../lib/site";
-import { toHTML } from "@portabletext/to-html";
+import { renderBody } from "../../lib/portableText";
 import { stegaClean } from "@sanity/client/stega";
 
 const isPreview = Astro.url.searchParams.get('preview') === '1';
@@ -63,130 +63,8 @@ const bodyStyleAttr = textStyles
       .join(' ')
   : '';
 
-const buildBlockClassFromStyle = (style: string, extraClasses: string[] = []) => {
-  const align = style.includes('-') ? style.split('-')[1] : 'left';
-  return ['body-text', `align-${align}`, ...extraClasses].filter(Boolean).join(' ');
-};
-
-const blockComponents: Record<string, ({ children }: { children?: string }) => string> = {};
-
-const addBlockStyle = (style: string, tag: string, extraClasses: string[] = []) => {
-  blockComponents[style] = ({ children }) =>
-    `<${tag} class="${buildBlockClassFromStyle(style, extraClasses)}">${children ?? ''}</${tag}>`;
-};
-
-const sizes = ['normal', 'small', 'h1', 'h2', 'h3', 'h4'] as const;
-const aligns = ['left', 'center', 'right'] as const;
-const tagForSize: Record<(typeof sizes)[number], string> = {
-  normal: 'p',
-  small: 'p',
-  h1: 'h1',
-  h2: 'h2',
-  h3: 'h3',
-  h4: 'h4',
-};
-
-sizes.forEach((size) => {
-  addBlockStyle(size, tagForSize[size], size === 'small' ? ['text-small'] : []);
-  aligns
-    .filter((align) => align !== 'left')
-    .forEach((align) => {
-      addBlockStyle(`${size}-${align}`, tagForSize[size], size === 'small' ? ['text-small'] : []);
-    });
-});
-
-addBlockStyle('blockquote', 'blockquote', ['body-quote']);
-
-// Render body blocks to HTML
-const bodyHtml = work.body
-  ? toHTML(work.body as any, {
-      components: {
-        types: {
-          imageBlock: ({ value }: { value: any }) => {
-            // Handle cases where asset is missing or null
-            if (!value.asset) {
-              console.warn('imageBlock missing asset:', value);
-              return '';
-            }
-
-            const widthOption = (value.width as string) ?? 'text';
-            const customWidth = (value.customWidth as string | undefined)?.trim();
-            const renderWidth = ({
-              small: 600,
-              text: 1000,
-              medium: 1300,
-              large: 1800,
-              full: 2400,
-              custom: 2400,
-            } as Record<string, number>)[widthOption] ?? 1000;
-            const customStyle =
-              widthOption === 'custom' && customWidth
-                ? ` style="--custom-image-width: ${customWidth};"`
-                : '';
-
-            // Use dereferenced url if available, otherwise use urlFor with the reference
-            const src = value.asset.url
-              ? `${value.asset.url}?w=${renderWidth}&auto=format`
-              : value.asset._ref
-                ? urlFor(value).width(renderWidth).url()
-                : null;
-
-            if (!src) {
-              console.warn('imageBlock has no valid asset url or ref:', value);
-              return '';
-            }
-
-            const alt = value.caption ?? work.title;
-            const caption = value.caption
-              ? `<figcaption class="image-caption">${value.caption}</figcaption>`
-              : '';
-            return `<section class="fullwidth-image-section image-width-${widthOption}"${customStyle}><figure><img src="${src}" alt="${alt}" class="fullwidth-image" loading="lazy" decoding="async" />${caption}</figure></section>`;
-          },
-          imageGallery: ({ value }: { value: any }) => {
-            const images = (value.images ?? []).filter((img: any) => img?.asset);
-            if (images.length === 0) return '';
-
-            const slides = images
-              .map((img: any, i: number) => {
-                const src = img.asset.url
-                  ? `${img.asset.url}?w=1600&auto=format`
-                  : img.asset._ref
-                    ? urlFor(img).width(1600).url()
-                    : null;
-                if (!src) return '';
-                const alt = img.caption ?? `${work.title} - image ${i + 1}`;
-                const caption = img.caption
-                  ? `<figcaption class="image-caption">${img.caption}</figcaption>`
-                  : '';
-                return `<figure class="gallery-slide" data-index="${i}"${i === 0 ? '' : ' hidden'}><img src="${src}" alt="${alt}" class="fullwidth-image" loading="lazy" decoding="async" />${caption}</figure>`;
-              })
-              .join('');
-
-            return `<section class="fullwidth-image-section gallery-section"><div class="image-gallery" data-count="${images.length}">
-              <button type="button" class="gallery-btn gallery-prev" aria-label="Previous image">&#8592;</button>
-              <div class="gallery-slides">${slides}</div>
-              <button type="button" class="gallery-btn gallery-next" aria-label="Next image">&#8594;</button>
-              <div class="gallery-counter"><span class="gallery-current">1</span> / ${images.length}</div>
-            </div></section>`;
-          },
-          videoEmbed: ({ value }: { value: any }) => {
-            const cleanUrl = stegaClean(value.url as string);
-            const embedUrl = cleanUrl.replace('watch?v=', 'embed/');
-            return `<section class="body-video-section"><div class="video-wrapper"><iframe src="${embedUrl}" title="${work.title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div></section>`;
-          },
-        },
-        block: blockComponents,
-        listItem: ({ children, value }: { children: string; value?: any }) => {
-          const level = Number(value?.level) || 1;
-          return `<li data-level="${level}">${children}</li>`;
-        },
-        marks: {
-          link: ({ children, value }: { children: string; value?: any }) =>
-            `<a href="${stegaClean(value?.href ?? '')}" target="_blank" rel="noopener noreferrer">${children}</a>`,
-        },
-      },
-    })
-  : '';
+// Render body blocks to HTML (shared renderer — see src/lib/portableText.ts)
+const bodyHtml = renderBody(work.body, { title: work.title });
 ---
 
 <Layout title={title} description={description} ogType="article" ogImage={ogImageUrl} jsonLd={creativeWorkSchema}>
@@ -254,6 +132,19 @@ const bodyHtml = work.body
   <!-- Body: text blocks, images, video embeds — in the order you set in Sanity -->
   {bodyHtml && (
     <div class="body-content" style={bodyStyleAttr} set:html={bodyHtml} />
+  )}
+
+  {work.notes && work.notes.length > 0 && (
+    <section class="work-notes-section">
+      <h2 class="work-notes-title">Field Notes on this project</h2>
+      <ul class="work-notes-list">
+        {work.notes.map((note) => (
+          <li>
+            <a href={`/notes/${note.slug.current}`}>{note.title}</a>
+          </li>
+        ))}
+      </ul>
+    </section>
   )}
 
   {work.relatedWorks && work.relatedWorks.length > 0 && (
@@ -886,6 +777,36 @@ const bodyHtml = work.body
     width: 100%;
     height: 100%;
   }
+
+  /* Field Notes on this project */
+  .work-notes-section {
+    max-width: 800px;
+    margin: 3rem auto 0;
+    padding: 0 2rem;
+  }
+
+  .work-notes-title {
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin: 0 0 1rem;
+  }
+
+  .work-notes-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .work-notes-list a {
+    color: #fbbf24;
+    text-decoration: none;
+    font-size: 1.1rem;
+  }
+
+  .work-notes-list a:hover { text-decoration: underline; }
 
   /* You May Also Like */
   .related-works-section {

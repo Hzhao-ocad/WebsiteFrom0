@@ -18,6 +18,25 @@ export interface SanityWork {
   collaborators?: { name: string; url?: string }[]
   body?: BodyBlock[]
   relatedWorks?: SanityWork[]
+  notes?: WorkNoteRef[]
+}
+
+export interface SanityPost {
+  _id: string
+  title: string
+  slug: { current: string }
+  publishedAt: string
+  excerpt?: string
+  coverImage?: object
+  tags?: string[]
+  body?: BodyBlock[]
+  relatedWork?: { title: string; slug: { current: string } } | null
+}
+
+export interface WorkNoteRef {
+  title: string
+  slug: { current: string }
+  publishedAt: string
 }
 
 export type BodyBlock =
@@ -45,6 +64,11 @@ const workDetailFields = `
   videoUrl,
   heroDescription,
   collaborators,
+  "notes": *[_type == "post" && references(^._id)] | order(publishedAt desc) {
+    title,
+    slug,
+    publishedAt
+  },
   relatedWorks[]-> {
     ${workCardFields}
   },
@@ -106,5 +130,47 @@ export async function getAllWorkSlugs(): Promise<{ slug: string }[]> {
 export async function getFeaturedWorks(): Promise<SanityWork[]> {
   return client.fetch(
     `*[_type == "work" && isFeatured == true] | order(publishDate desc) { ${workCardFields} }`
+  )
+}
+
+// --- Notes / posts ---
+
+const postCardFields = `
+  _id,
+  title,
+  slug,
+  publishedAt,
+  excerpt,
+  coverImage,
+  tags,
+  "relatedWork": relatedWork->{ title, slug }
+`
+
+export async function getAllPosts(): Promise<SanityPost[]> {
+  return client.fetch(
+    `*[_type == "post" && defined(slug.current)] | order(publishedAt desc) { ${postCardFields} }`
+  )
+}
+
+export async function getAllPostSlugs(): Promise<{ slug: string }[]> {
+  return client.fetch(
+    `*[_type == "post" && defined(slug.current)] { "slug": slug.current }`
+  )
+}
+
+export async function getPostBySlug(
+  slug: string,
+  fetchClient: SanityClient = client
+): Promise<SanityPost | null> {
+  return fetchClient.fetch(
+    `*[_type == "post" && slug.current == $slug][0] {
+      ${postCardFields},
+      body[] {
+        ...,
+        _type == "imageBlock" => { ..., asset-> },
+        _type == "imageGallery" => { ..., images[] { ..., asset-> } }
+      }
+    }`,
+    { slug }
   )
 }

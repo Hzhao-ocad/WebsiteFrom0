@@ -1,0 +1,197 @@
+---
+import Layout from "../../layouts/layout.astro";
+import { getAllPostSlugs, getPostBySlug } from "../../lib/queries";
+import { urlFor, previewClient } from "../../lib/sanityClient";
+import { renderBody } from "../../lib/portableText";
+import { PERSON_ID, SITE_NAME, DEFAULT_OG_IMAGE, absoluteUrl, truncate } from "../../lib/site";
+import { stegaClean } from "@sanity/client/stega";
+import "../../styles/body-content.css";
+
+const isPreview = Astro.url.searchParams.get('preview') === '1';
+
+export async function getStaticPaths() {
+  const slugs = await getAllPostSlugs();
+  return slugs.map(({ slug }) => ({ params: { slug } }));
+}
+
+const { slug } = Astro.params;
+const post = await getPostBySlug(slug as string, isPreview ? previewClient : undefined);
+
+if (!post) {
+  return Astro.redirect('/notes');
+}
+
+const title = `${post.title} — Field Notes | Harry Zhao`;
+const rawExcerpt = stegaClean(post.excerpt || '');
+const description = rawExcerpt
+  ? truncate(rawExcerpt, 155)
+  : `${post.title} — a behind-the-scenes note by Harry Zhao on robotics, physical computing, and interactive media.`;
+
+const canonicalUrl = absoluteUrl(`/notes/${post.slug.current}`);
+const ogImageUrl = post.coverImage
+  ? urlFor(post.coverImage).width(1200).height(630).fit('crop').url()
+  : DEFAULT_OG_IMAGE;
+
+const formatDate = (d?: string) =>
+  d ? new Date(d).toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+
+const bodyHtml = renderBody(post.body, { title: post.title });
+
+const blogPostingSchema = {
+  '@type': 'BlogPosting',
+  headline: stegaClean(post.title),
+  description,
+  image: ogImageUrl,
+  url: canonicalUrl,
+  mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
+  ...(post.publishedAt ? { datePublished: post.publishedAt } : {}),
+  author: { '@type': 'Person', '@id': PERSON_ID, name: SITE_NAME },
+  publisher: { '@type': 'Person', '@id': PERSON_ID, name: SITE_NAME },
+  ...(post.tags && post.tags.length ? { keywords: post.tags.map((t) => stegaClean(t)).join(', ') } : {}),
+  ...(post.relatedWork ? { about: absoluteUrl(`/works/${post.relatedWork.slug.current}`) } : {}),
+};
+---
+
+<Layout title={title} description={description} ogType="article" ogImage={ogImageUrl} jsonLd={blogPostingSchema}>
+  <article class="note">
+    <header class="note-header">
+      <p class="note-meta">
+        <a href="/notes" class="note-back">Field Notes</a>
+        {post.publishedAt && (
+          <>
+            <span aria-hidden="true"> · </span>
+            <time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+          </>
+        )}
+      </p>
+      <h1 class="note-title">{post.title}</h1>
+      {post.excerpt && <p class="note-lead">{post.excerpt}</p>}
+      {post.relatedWork && (
+        <p class="note-project-link">
+          Documenting:
+          <a href={`/works/${post.relatedWork.slug.current}`}>{post.relatedWork.title}</a>
+        </p>
+      )}
+    </header>
+
+    {post.coverImage && (
+      <figure class="note-cover">
+        <img
+          src={urlFor(post.coverImage).width(1600).auto('format').url()}
+          srcset={`${urlFor(post.coverImage).width(800).auto('format').url()} 800w, ${urlFor(post.coverImage).width(1200).auto('format').url()} 1200w, ${urlFor(post.coverImage).width(1600).auto('format').url()} 1600w`}
+          sizes="(max-width: 900px) 100vw, 900px"
+          alt={(post.coverImage as any)?.alt || `${post.title} — cover image`}
+          loading="eager"
+          fetchpriority="high"
+        />
+      </figure>
+    )}
+
+    {bodyHtml && <div class="body-content" set:html={bodyHtml} />}
+
+    {post.relatedWork && (
+      <aside class="note-related">
+        <p>
+          Read more about the project this note documents:
+          <a href={`/works/${post.relatedWork.slug.current}`}>{post.relatedWork.title} →</a>
+        </p>
+      </aside>
+    )}
+  </article>
+
+  <div id="lightbox" class="lightbox" hidden>
+    <button type="button" class="lightbox-close" aria-label="Close">&times;</button>
+    <div class="lightbox-stage">
+      <img class="lightbox-image" alt="" />
+    </div>
+    <div class="lightbox-hint">scroll to zoom &middot; drag to pan &middot; esc to close</div>
+  </div>
+</Layout>
+
+<script>
+  import { initBodyInteractions } from "../../scripts/bodyInteractions";
+  initBodyInteractions();
+</script>
+
+<style>
+  .note {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 4rem 0 3rem;
+  }
+
+  .note-header {
+    max-width: 800px;
+    margin: 0 auto 2rem;
+    padding: 0 2rem;
+  }
+
+  .note-meta {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.55);
+    margin: 0 0 1rem 0;
+  }
+
+  .note-back {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+  }
+
+  .note-back:hover { color: #fbbf24; }
+
+  .note-title {
+    font-size: 3rem;
+    font-weight: 400;
+    line-height: 1.15;
+    margin: 0 0 1rem 0;
+  }
+
+  .note-lead {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.75);
+    margin: 0 0 1rem 0;
+  }
+
+  .note-project-link {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+  }
+
+  .note-project-link a,
+  .note-related a {
+    color: #fbbf24;
+    text-decoration: none;
+    margin-left: 0.4rem;
+  }
+
+  .note-project-link a:hover,
+  .note-related a:hover { text-decoration: underline; }
+
+  .note-cover {
+    max-width: 900px;
+    margin: 0 auto 3rem;
+    padding: 0 2rem;
+  }
+
+  .note-cover img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+  }
+
+  .note-related {
+    max-width: 800px;
+    margin: 3rem auto 0;
+    padding: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  @media (max-width: 768px) {
+    .note-title { font-size: 2.1rem; }
+    .note-lead { font-size: 1.1rem; }
+  }
+</style>
