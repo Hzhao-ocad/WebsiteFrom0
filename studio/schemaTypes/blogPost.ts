@@ -1,9 +1,13 @@
 import { defineField, defineType } from 'sanity'
+import { WordLikePortableTextInput } from '../components/WordLikePortableTextInput.tsx'
 import { StyledBlockRender } from '../components/StyledBlockRender.tsx'
 
-export const blogPostType = defineType({
-  name: 'blogPost',
-  title: 'Blog Post',
+// "Notes" / "Field Notes" in the UI; the document type stays `post` and the
+// route stays /notes/[slug]. Technical, behind-the-scenes writing that keeps
+// long-tail SEO value on harryzhao.art and links to the projects it documents.
+export const postType = defineType({
+  name: 'post',
+  title: 'Note',
   type: 'document',
   fields: [
     defineField({
@@ -20,26 +24,41 @@ export const blogPostType = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'publishDate',
-      title: 'Publish Date',
-      type: 'date',
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'heroImage',
-      title: 'Hero Image',
-      description: 'Main image for the blog post. Used as thumbnail on listing and hero on detail page.',
-      type: 'image',
-      options: { hotspot: true },
+      name: 'publishedAt',
+      title: 'Published At',
+      type: 'datetime',
+      initialValue: () => new Date().toISOString(),
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'excerpt',
       title: 'Excerpt',
-      description: 'Short summary shown on the blog index page (max 300 characters).',
+      description:
+        'One or two sentences. Used as the meta description and the card summary (aim for ~150 characters).',
       type: 'text',
       rows: 3,
-      validation: (Rule) => Rule.required().max(300),
+      validation: (Rule) => Rule.max(300),
+    }),
+    defineField({
+      name: 'coverImage',
+      title: 'Cover Image',
+      type: 'image',
+      options: { hotspot: true },
+      fields: [
+        defineField({
+          name: 'alt',
+          title: 'Alt text',
+          description: 'Describe the image for screen readers and search engines.',
+          type: 'string',
+        }),
+      ],
+    }),
+    defineField({
+      name: 'relatedWork',
+      title: 'Related Project',
+      description: 'The project this note documents. Creates two-way links between the note and the work.',
+      type: 'reference',
+      to: [{ type: 'work' }],
     }),
     defineField({
       name: 'tags',
@@ -51,8 +70,11 @@ export const blogPostType = defineType({
     defineField({
       name: 'body',
       title: 'Content Body',
-      description: 'Add text and images in any order.',
+      description: 'Add text, images, or video embeds in any order.',
       type: 'array',
+      components: {
+        input: WordLikePortableTextInput,
+      },
       of: [
         {
           type: 'block',
@@ -99,28 +121,53 @@ export const blogPostType = defineType({
           },
         },
         { type: 'imageBlock' },
+        {
+          type: 'object',
+          name: 'imageGallery',
+          title: 'Image Gallery',
+          fields: [
+            defineField({
+              name: 'images',
+              title: 'Images',
+              type: 'array',
+              of: [
+                {
+                  type: 'image',
+                  options: { hotspot: true },
+                  fields: [
+                    defineField({
+                      name: 'caption',
+                      title: 'Caption',
+                      type: 'string',
+                    }),
+                  ],
+                },
+              ],
+              validation: (Rule) => Rule.min(1),
+            }),
+          ],
+        },
+        {
+          type: 'object',
+          name: 'videoEmbed',
+          title: 'Video Embed (YouTube)',
+          fields: [
+            defineField({
+              name: 'url',
+              title: 'YouTube URL',
+              type: 'url',
+              validation: (Rule) => Rule.required(),
+            }),
+          ],
+        },
       ],
     }),
   ],
   preview: {
-    select: {
-      title: 'title',
-      subtitle: 'publishDate',
-      media: 'heroImage',
-    },
-    prepare({ title, subtitle, media }: { title: string; subtitle: string; media: any }) {
-      return {
-        title,
-        subtitle: subtitle ? new Date(subtitle).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '',
-        media,
-      }
+    select: { title: 'title', media: 'coverImage', date: 'publishedAt' },
+    prepare({ title, media, date }: { title: string; media: unknown; date: string }) {
+      const subtitle = date ? new Date(date).toLocaleDateString() : 'Unpublished'
+      return { title, media, subtitle }
     },
   },
-  orderings: [
-    {
-      title: 'Publish Date, New',
-      name: 'publishDateDesc',
-      by: [{ field: 'publishDate', direction: 'desc' }],
-    },
-  ],
 })

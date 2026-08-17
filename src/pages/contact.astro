@@ -1,9 +1,21 @@
 ---
 import Layout from "../layouts/layout.astro";
-const title = "Contact - Harry Zhao";
+import { SOCIAL_LINKS } from "../lib/site";
+const title = "Contact — Harry Zhao";
+const description = "Get in touch with Toronto-based artist Harry Zhao for exhibitions, commissions, and collaborations.";
+
+// Only render links the owner has actually configured (see src/lib/site.ts).
+// TODO(owner): fill in real profile URLs in SOCIAL_LINKS to surface these.
+const socialLinks = [
+  { label: "Instagram", url: SOCIAL_LINKS.instagram },
+  { label: "LinkedIn", url: SOCIAL_LINKS.linkedin },
+  { label: "GitHub", url: SOCIAL_LINKS.github },
+  { label: "Vimeo", url: SOCIAL_LINKS.vimeo },
+  { label: "YouTube", url: SOCIAL_LINKS.youtube },
+].filter((s) => s.url);
 ---
 
-<Layout title={title}>
+<Layout title={title} description={description}>
   <!-- Page Header -->
   <section class="page-header">
     <div class="container">
@@ -27,16 +39,16 @@ const title = "Contact - Harry Zhao";
           <p>Toronto, Canada</p>
         </div>
 
-        <div class="info-item">
-          <h3>Social</h3>
-          <div class="social-links">
-            <!-- Update these links with your actual social profiles -->
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a>
-            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <a href="https://vimeo.com" target="_blank" rel="noopener noreferrer">Vimeo</a>
+        {socialLinks.length > 0 && (
+          <div class="info-item">
+            <h3>Social</h3>
+            <div class="social-links">
+              {socialLinks.map((s) => (
+                <a href={s.url} target="_blank" rel="noopener noreferrer">{s.label}</a>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
     </div>

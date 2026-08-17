@@ -1,9 +1,11 @@
 ---
 import Layout from "../layouts/layout.astro";
-const title = "About - Harry Zhao";
+import { personSchema } from "../lib/site";
+const title = "About — Harry Zhao | Artist & Researcher, Toronto";
+const description = "Harry Zhao (MFA, OCAD; BFA, SAIC) makes creature-like robots exploring an alternative relationship between humans and machines.";
 ---
 
-<Layout title={title}>
+<Layout title={title} description={description} jsonLd={personSchema}>
   <!-- Page Header -->
   <section class="page-header">
     <div class="container">
@@ -17,7 +19,7 @@ const title = "About - Harry Zhao";
       
       <!-- Profile Image -->
       <div class="profile-image-wrapper">
-        <img src="/images/about/profile.jpg" alt="Harry Zhao" class="profile-image" />
+        <img src="/images/about/profile.jpg" alt="Portrait of Harry Zhao, Toronto-based artist and researcher" class="profile-image" width="180" height="180" />
       </div>
 
       <!-- Bio -->
@@ -27,7 +29,7 @@ const title = "About - Harry Zhao";
         
         <div class="bio-text">
           <p>
-            Harry Zhao is an toronto based artist and researcher. His work spans from robotics, interactive installations to digital media. His practice aims to build and discover an alternative relationship between humans and machines/robots. 
+            Harry Zhao is a Toronto-based artist and researcher. His work spans from robotics, interactive installations to digital media. His practice aims to build and discover an alternative relationship between humans and machines/robots.
           </p>
           <br>
           <p>
@@ -39,7 +41,7 @@ const title = "About - Harry Zhao";
           <br>
           <p>
             Harry holds a Master of Fine Arts degree in Digital Futures program from the Ontario College of Art and Design University and a Bachelor of Fine Arts in Art and Technology from the School of the Art Institute of Chicago.
-          <p>
+          </p>
         </div>
       </div>
 
@@ -54,7 +56,7 @@ const title = "About - Harry Zhao";
       <div class="experience-list">
         <div class="experience-item">
           <div class="experience-details">
-            <h3>Schoolf of the Art Insititude of Chicago (SAIC)</h3>
+            <h3>School of the Art Institute of Chicago (SAIC)</h3>
             <p>BFA in Fine Arts with an emphasis in Art and Technology</p>
             <div class="experience-date">2019 - 2024</div>
           </div>

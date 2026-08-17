@@ -18,6 +18,25 @@ export interface SanityWork {
   collaborators?: { name: string; url?: string }[]
   body?: BodyBlock[]
   relatedWorks?: SanityWork[]
+  notes?: WorkNoteRef[]
+}
+
+export interface SanityPost {
+  _id: string
+  title: string
+  slug: { current: string }
+  publishedAt: string
+  excerpt?: string
+  coverImage?: object
+  tags?: string[]
+  body?: BodyBlock[]
+  relatedWork?: { title: string; slug: { current: string } } | null
+}
+
+export interface WorkNoteRef {
+  title: string
+  slug: { current: string }
+  publishedAt: string
 }
 
 export type BodyBlock =
@@ -45,6 +64,11 @@ const workDetailFields = `
   videoUrl,
   heroDescription,
   collaborators,
+  "notes": *[_type == "post" && references(^._id)] | order(publishedAt desc) {
+    title,
+    slug,
+    publishedAt
+  },
   relatedWorks[]-> {
     ${workCardFields}
   },
@@ -109,64 +133,44 @@ export async function getFeaturedWorks(): Promise<SanityWork[]> {
   )
 }
 
-// --- Blog Types ---
+// --- Notes / posts ---
 
-export interface SanityBlogPost {
-  _id: string
-  title: string
-  slug: { current: string }
-  publishDate: string
-  heroImage: object
-  excerpt: string
-  tags: string[]
-  body?: BlogBodyBlock[]
-}
-
-export type BlogBodyBlock =
-  | { _type: 'block'; _key: string; style: string; children: { _key: string; text: string; marks: string[] }[]; markDefs: { _key: string; _type: string; href?: string }[] }
-  | { _type: 'imageBlock'; _key: string; asset: object; caption?: string }
-
-// --- Blog Queries ---
-
-const blogCardFields = `
+const postCardFields = `
   _id,
   title,
   slug,
-  publishDate,
-  heroImage,
+  publishedAt,
   excerpt,
-  tags
+  coverImage,
+  tags,
+  "relatedWork": relatedWork->{ title, slug }
 `
 
-const blogDetailFields = `
-  ${blogCardFields},
-  body[] {
-    ...,
-    _type == "imageBlock" => {
-      ...,
-      asset->
-    }
-  }
-`
-
-export async function getAllBlogPosts(): Promise<SanityBlogPost[]> {
+export async function getAllPosts(): Promise<SanityPost[]> {
   return client.fetch(
-    `*[_type == "blogPost"] | order(publishDate desc) { ${blogCardFields} }`
+    `*[_type == "post" && defined(slug.current)] | order(publishedAt desc) { ${postCardFields} }`
   )
 }
 
-export async function getBlogPostBySlug(
+export async function getAllPostSlugs(): Promise<{ slug: string }[]> {
+  return client.fetch(
+    `*[_type == "post" && defined(slug.current)] { "slug": slug.current }`
+  )
+}
+
+export async function getPostBySlug(
   slug: string,
   fetchClient: SanityClient = client
-): Promise<SanityBlogPost | null> {
+): Promise<SanityPost | null> {
   return fetchClient.fetch(
-    `*[_type == "blogPost" && slug.current == $slug][0] { ${blogDetailFields} }`,
+    `*[_type == "post" && slug.current == $slug][0] {
+      ${postCardFields},
+      body[] {
+        ...,
+        _type == "imageBlock" => { ..., asset-> },
+        _type == "imageGallery" => { ..., images[] { ..., asset-> } }
+      }
+    }`,
     { slug }
-  )
-}
-
-export async function getAllBlogSlugs(): Promise<{ slug: string }[]> {
-  return client.fetch(
-    `*[_type == "blogPost"] { "slug": slug.current }`
   )
 }
