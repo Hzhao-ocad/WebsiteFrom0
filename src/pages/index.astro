@@ -62,10 +62,10 @@ const websiteSchema = {
   <section class="full-section section black-bg" style={{ "--bg-color": `url('/images/work/moomoocow/moomoocow_2.png')` }}>
 
     <ul class="works-list">
-      {orderedFeaturedWorks.map((work) => {
+      {orderedFeaturedWorks.map((work, index) => {
         const year = work.publishDate ? new Date(work.publishDate).getFullYear() : null;
         return (
-          <li class="work-row">
+          <li class={`work-row ${index === 0 ? 'work-row--default' : ''}`}>
             <div class="work-media">
               <a href={`/works/${work.slug.current}`} class="work-media-link" tabindex="-1">
                 <img src={urlFor(work.coverImage).width(1600).url()} alt="" loading="lazy" width="1600" height="1200" />
@@ -144,6 +144,8 @@ const websiteSchema = {
   max-width: 900px;
   display: flex;
   flex-direction: column;
+  flex: 1;
+  justify-content: center;
 }
 
 .work-row {
@@ -163,6 +165,10 @@ const websiteSchema = {
 }
 
 .work-row:hover .work-media {
+  opacity: 1;
+}
+
+.works-list:not(:hover) .work-row--default .work-media {
   opacity: 1;
 }
 
@@ -191,6 +197,10 @@ const websiteSchema = {
   opacity: 1;
 }
 
+.works-list:not(:hover) .work-row--default .work-media video {
+  opacity: 1;
+}
+
 .work-title {
   position: relative;
   z-index: 2;
@@ -203,6 +213,10 @@ const websiteSchema = {
 }
 
 .work-row:hover .work-title {
+  color: #fbbf24;
+}
+
+.works-list:not(:hover) .work-row--default .work-title {
   color: #fbbf24;
 }
 
