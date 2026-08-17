@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/layout.astro";
+import Footer from "../components/Footer.astro";
 import { getFeaturedWorks, type SanityWork } from '../lib/queries';
 import { urlFor } from '../lib/sanityClient';
 import { SITE_URL, SITE_NAME, personSchema } from '../lib/site';
@@ -25,7 +26,7 @@ const websiteSchema = {
 };
 ---
 
-<Layout title={title} description={description} jsonLd={[personSchema, websiteSchema]}>
+<Layout title={title} description={description} jsonLd={[personSchema, websiteSchema]} showFooter={false}>
   <section class="full-section video-bg">
     <div class="bg-video-wrapper">
       <picture>
@@ -84,10 +85,55 @@ const websiteSchema = {
       })}
     </ul>
 
+    <Footer />
   </section>
 
 
 </Layout>
+
+<script>
+  // Assist the hero -> featured-works transition: mostly free scroll, but
+  // if the user stops scrolling within the top/bottom ~20% of that first
+  // screen, finish carrying them to the nearest section edge.
+  (() => {
+    const SNAP_THRESHOLD = 0.8;
+    const sections = document.querySelectorAll<HTMLElement>('.full-section');
+    const heroSection = sections[0];
+    if (!heroSection || sections.length < 2) return;
+
+    const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
+
+    let scrollEndTimer: number | undefined;
+    let isAssisting = false;
+
+    const handleScrollEnd = () => {
+      if (isAssisting || isMobile()) return;
+
+      const heroHeight = heroSection.offsetHeight;
+      const scrollY = window.scrollY;
+      if (scrollY <= 0 || scrollY >= heroHeight) return;
+
+      const progress = scrollY / heroHeight;
+      let target: number | null = null;
+      if (progress >= SNAP_THRESHOLD) {
+        target = heroHeight;
+      } else if (progress <= 1 - SNAP_THRESHOLD) {
+        target = 0;
+      }
+      if (target === null) return;
+
+      isAssisting = true;
+      window.scrollTo({ top: target, behavior: 'smooth' });
+      window.setTimeout(() => { isAssisting = false; }, 600);
+    };
+
+    window.addEventListener('scroll', () => {
+      if (isAssisting) return;
+      window.clearTimeout(scrollEndTimer);
+      scrollEndTimer = window.setTimeout(handleScrollEnd, 150);
+    }, { passive: true });
+  })();
+</script>
 
 <style>
 .works-list {
@@ -242,6 +288,7 @@ const websiteSchema = {
   }
   .black-bg{
     overflow-x: hidden;
+    background: var(--bg-color) center / cover no-repeat;
   }
   .black-bg::before {
     content: '';
@@ -250,6 +297,11 @@ const websiteSchema = {
     background: rgba(0, 0, 0, 0.3);
     z-index: 1;
     pointer-events: none;
+  }
+  .black-bg :global(.main-footer) {
+    position: relative;
+    z-index: 2;
+    margin-top: auto;
   }
   .full-section {
     position: relative;
