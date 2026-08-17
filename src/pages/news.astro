@@ -1,0 +1,96 @@
+---
+import Layout from "../layouts/layout.astro";
+import { personSchema } from "../lib/site";
+
+// --- EDIT HERE -------------------------------------------------------------
+// Add a new object to the top of this list to post an update. `date` is
+// optional; leave it out (or set it to "") and no date line is shown.
+const newsItems = [
+  {
+    title: "Exhibition Coming Next January @ InterAccess",
+    date: "",
+    body: "",
+  },
+];
+// ---------------------------------------------------------------------------
+
+const title = "News — Harry Zhao | Exhibitions & Announcements";
+const description =
+  "Latest news from Toronto-based artist Harry Zhao: upcoming exhibitions, shows, and announcements. Exhibition coming next January at InterAccess.";
+---
+
+<Layout title={title} description={description} jsonLd={personSchema}>
+  <section class="page-header">
+    <div class="container">
+      <h1>News</h1>
+    </div>
+  </section>
+
+  <section class="news-section">
+    <div class="news-list">
+      {newsItems.map((item) => (
+        <article class="news-item">
+          {item.date && <div class="news-date">{item.date}</div>}
+          <h2 class="news-title">{item.title}</h2>
+          {item.body && <p class="news-body">{item.body}</p>}
+        </article>
+      ))}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  /* Page Header */
+  .page-header {
+    padding: 4rem 2rem 2rem;
+    text-align: center;
+  }
+
+  .page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin: 0;
+  }
+
+  /* News list */
+  .news-section {
+    padding: 1rem 2rem 3rem;
+  }
+
+  .news-list {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .news-item {
+    padding: 2rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+  }
+
+  .news-item:last-child {
+    border-bottom: none;
+  }
+
+  .news-date {
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 0.6rem;
+  }
+
+  .news-title {
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .news-body {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 0.75rem;
+  }
+</style>

@@ -1,15 +1,19 @@
 ---
 import Layout from "../layouts/layout.astro";
-import { getFeaturedWorks } from '../lib/queries';
+import { getFeaturedWorks, type SanityWork } from '../lib/queries';
 import { urlFor } from '../lib/sanityClient';
 import { SITE_URL, SITE_NAME, personSchema } from '../lib/site';
 
 const title = "Harry Zhao — Artist & Physical Computing / Robotics (Toronto)";
 const description = "Harry Zhao is a Toronto-based artist and researcher building Iterative Creatures — robots with their own agency. Physical computing, interactive installation, digital media.";
 
-// Get featured works from Sanity
+// Get featured works from Sanity, with a manually curated lead-in order
 const featuredWorks = await getFeaturedWorks();
-const top6FeaturedWorks = featuredWorks.sort(() => Math.random() - 0.5).slice(0, 8);
+const FEATURED_ORDER = ['aworm', 'echoes-of-you', 'pet-network', 'comet-rat', 'light-touch'];
+const orderedFeaturedWorks = [
+  ...FEATURED_ORDER.map(slug => featuredWorks.find(work => work.slug.current === slug)).filter((work): work is SanityWork => work !== undefined),
+  ...featuredWorks.filter(work => !FEATURED_ORDER.includes(work.slug.current)),
+];
 
 const websiteSchema = {
   '@type': 'WebSite',
@@ -56,19 +60,29 @@ const websiteSchema = {
 
   <section class="full-section section black-bg" style={{ "--bg-color": `url('/images/work/moomoocow/moomoocow_2.png')` }}>
 
-    <div class="card-wrapper">
-      {top6FeaturedWorks.map(work => (
-      <a href={`/works/${work.slug.current}`} class="card">
-        <img src={urlFor(work.coverImage).width(800).url()} alt={`${work.title} — work by Harry Zhao`} class="card_image" loading="lazy" width="800" height="800"/>
-        {work.previewVideoUrl && (
-        <video muted loop autoplay preload="none">
-          <source src={work.previewVideoUrl} type="video/webm" />
-        </video>
-        )}
-        <h3 class="card-info">{work.title}</h3>
-      </a>
-      ))}
-    </div>
+    <ul class="works-list">
+      {orderedFeaturedWorks.map((work) => {
+        const year = work.publishDate ? new Date(work.publishDate).getFullYear() : null;
+        return (
+          <li class="work-row">
+            <div class="work-media">
+              <a href={`/works/${work.slug.current}`} class="work-media-link" tabindex="-1">
+                <img src={urlFor(work.coverImage).width(1600).url()} alt="" loading="lazy" width="1600" height="1200" />
+                {work.previewVideoUrl && (
+                  <video muted loop autoplay preload="none">
+                    <source src={work.previewVideoUrl} type="video/webm" />
+                  </video>
+                )}
+              </a>
+            </div>
+            <a href={`/works/${work.slug.current}`} class="work-title">
+              {work.title}
+              {year && <span class="work-year"> — {year}</span>}
+            </a>
+          </li>
+        );
+      })}
+    </ul>
 
   </section>
 
@@ -76,83 +90,97 @@ const websiteSchema = {
 </Layout>
 
 <style>
-.card-wrapper {
-  display: grid;
-  grid-template-rows: auto;
-  grid-template-columns: repeat(4, 1fr);
+.works-list {
+  list-style: none;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
   width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+}
+
+.work-row {
+  text-align: center;
+  padding: 0.3rem 0;
+}
+
+.work-media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+  z-index: 0;
+  background: var(--bg1);
+}
+
+.work-row:hover .work-media {
+  opacity: 1;
+}
+
+.work-media-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.work-media img,
+.work-media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.work-media video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.work-row:hover .work-media video {
+  opacity: 1;
+}
+
+.work-title {
+  position: relative;
+  z-index: 2;
+  display: inline-block;
+  text-decoration: none;
+  color: var(--fg);
+  font-family: "DM Serif Display", serif;
+  font-size: 1.75rem;
+  transition: color 0.2s ease;
+}
+
+.work-row:hover .work-title {
+  color: #fbbf24;
+}
+
+.work-year {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 @media (max-width: 768px) {
-  .card-wrapper {
-    /* 2 columns for mobile */
-    grid-template-columns: repeat(2, 1fr);
+  .work-row {
+    padding: 0.5rem 0;
+  }
+  .work-media {
+    display: none;
+  }
+  .black-bg::before {
+    display: none;
+  }
+  .work-title {
+    font-size: 1.35rem;
   }
   .full-section {
     min-height:0;
   }
-}
-
-.card {
-  position:relative;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  width:  auto;
-  height: auto;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  }
-  
-.card_image
-{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-
-}
-
-.card video{
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.card:hover video{
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 1;
-  transition: opacity 0.3s ease;
-}
-  
-.card-info {
-  position: absolute;
-  bottom: 0;
-  margin-bottom: 0;
-  align-items: bottom;
-  width: 100%;
-  text-align: right;
-  font-size: 1.25rem;
-  color: white;
-  background: linear-gradient(transparent, rgba(0,0,0,0.8));
-  opacity: 0;
-  
-  transform: translateY(30px); 
-  transition: all 0.3s ease;
-
-}
-.card:hover .card-info{
-  opacity: 1;
-  transform: translateY(0);
 }
 
   .img-bg {
@@ -213,6 +241,15 @@ const websiteSchema = {
     z-index: 1;
   }
   .black-bg{
+    overflow-x: hidden;
+  }
+  .black-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1;
+    pointer-events: none;
   }
   .full-section {
     position: relative;
@@ -287,9 +324,6 @@ const websiteSchema = {
   .muted {
     color: rgba(255,255,255,0.4);
   }
-
-  ul { text-align: left; max-width: 560px; margin: 0 auto; }
-
 
   .section-title {
     font-size: 0.875rem;

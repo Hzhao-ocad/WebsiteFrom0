@@ -36,6 +36,7 @@ export const GET: APIRoute = async () => {
     { loc: absoluteUrl('/about'), changefreq: 'yearly', priority: '0.7' },
     { loc: absoluteUrl('/contact'), changefreq: 'yearly', priority: '0.5' },
     { loc: absoluteUrl('/notes'), changefreq: 'weekly', priority: '0.7' },
+    { loc: absoluteUrl('/news'), changefreq: 'monthly', priority: '0.7' },
   ]
 
   const workPages: SitemapEntry[] = works.map((w) => ({
