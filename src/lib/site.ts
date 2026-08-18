@@ -35,6 +35,18 @@ export function absoluteUrl(pathname: string): string {
   return new URL(path, SITE_URL).href
 }
 
+/**
+ * Convert a YouTube or Vimeo watch/share URL into its embeddable iframe URL.
+ * Plain vimeo.com links (and youtube.com/watch links) refuse to load in an
+ * iframe — Vimeo serves X-Frame-Options: sameorigin on the main site, so
+ * embedding requires the dedicated player.vimeo.com/video/{id} URL.
+ */
+export function toEmbedUrl(url: string): string {
+  const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/)
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`
+  return url.replace('watch?v=', 'embed/')
+}
+
 /** Trim a string to ~maxLen chars on a word boundary for meta descriptions. */
 export function truncate(text: string, maxLen = 155): string {
   const clean = (text ?? '').replace(/\s+/g, ' ').trim()

@@ -59,6 +59,19 @@ export default defineConfig({
                 : [],
             }),
           },
+          post: {
+            select: { title: 'title', slug: 'slug.current' },
+            resolve: (doc) => ({
+              locations: doc?.slug
+                ? [
+                    {
+                      title: (doc.title as string) ?? 'Untitled',
+                      href: `/notes/${doc.slug}?preview=1`,
+                    },
+                  ]
+                : [],
+            }),
+          },
         },
       },
     }),

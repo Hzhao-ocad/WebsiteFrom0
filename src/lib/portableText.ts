@@ -1,6 +1,7 @@
 import { toHTML } from '@portabletext/to-html'
 import { stegaClean } from '@sanity/client/stega'
 import { urlFor } from './sanityClient'
+import { toEmbedUrl } from './site'
 import type { BodyBlock } from './queries'
 
 // Shared Portable Text -> HTML renderer used by both work pages and notes.
@@ -108,7 +109,7 @@ export function renderBody(body: BodyBlock[] | undefined, opts: RenderBodyOption
         },
         videoEmbed: ({ value }: { value: any }) => {
           const cleanUrl = stegaClean(value.url as string)
-          const embedUrl = cleanUrl.replace('watch?v=', 'embed/')
+          const embedUrl = toEmbedUrl(cleanUrl)
           return `<section class="body-video-section"><div class="video-wrapper"><iframe src="${embedUrl}" title="${title}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div></section>`
         },
       },

@@ -121,12 +121,6 @@ export async function getTextStyles(): Promise<TextStyles | null> {
   )
 }
 
-export async function getAllWorkSlugs(): Promise<{ slug: string }[]> {
-  return client.fetch(
-    `*[_type == "work"] { "slug": slug.current }`
-  )
-}
-
 export async function getFeaturedWorks(): Promise<SanityWork[]> {
   return client.fetch(
     `*[_type == "work" && isFeatured == true] | order(publishDate desc) { ${workCardFields} }`
@@ -149,12 +143,6 @@ const postCardFields = `
 export async function getAllPosts(): Promise<SanityPost[]> {
   return client.fetch(
     `*[_type == "post" && defined(slug.current)] | order(publishedAt desc) { ${postCardFields} }`
-  )
-}
-
-export async function getAllPostSlugs(): Promise<{ slug: string }[]> {
-  return client.fetch(
-    `*[_type == "post" && defined(slug.current)] { "slug": slug.current }`
   )
 }
 

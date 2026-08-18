@@ -1,19 +1,18 @@
 ---
 import Layout from "../../layouts/layout.astro";
-import { getAllWorkSlugs, getWorkBySlug, getTextStyles } from "../../lib/queries";
+import { getWorkBySlug, getTextStyles } from "../../lib/queries";
 import { urlFor, previewClient } from "../../lib/sanityClient";
-import { PERSON_ID, SITE_NAME, absoluteUrl, truncate } from "../../lib/site";
+import { PERSON_ID, SITE_NAME, absoluteUrl, truncate, toEmbedUrl } from "../../lib/site";
 import { renderBody } from "../../lib/portableText";
 import { stegaClean } from "@sanity/client/stega";
 
-const isPreview = Astro.url.searchParams.get('preview') === '1';
+// On-demand rendering: a prerendered/static page can't see the request's query string
+// (Astro strips it, since a static route can only ever have one build-time HTML output),
+// so `?preview=1` would always evaluate to false and the page would silently fall back to
+// the CDN-cached published client — masking real edits behind the CDN's cache window.
+export const prerender = false;
 
-export async function getStaticPaths() {
-  const slugs = await getAllWorkSlugs();
-  return slugs.map(({ slug }) => ({
-    params: { slug },
-  }));
-}
+const isPreview = Astro.url.searchParams.get('preview') === '1';
 
 const { slug } = Astro.params;
 const work = await getWorkBySlug(slug as string, isPreview ? previewClient : undefined);
@@ -77,7 +76,7 @@ const bodyHtml = renderBody(work.body, { title: work.title });
       <div class="video-container">
         <div class="video-wrapper">
           <iframe
-            src={stegaClean(work.videoUrl).replace('watch?v=', 'embed/')}
+            src={toEmbedUrl(stegaClean(work.videoUrl))}
             title={work.title}
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
